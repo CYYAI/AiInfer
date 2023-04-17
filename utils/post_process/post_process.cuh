@@ -15,14 +15,14 @@ namespace ai
         // 默认一张图片最多的检测框是1024，可以通过传参或者直接修改默认参数改变
         void decode_detect_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                           float confidence_threshold, float *invert_affine_matrix,
-                                          float *parray, int MAX_IMAGE_BOXES, cudaStream_t stream);
+                                          float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream);
         // nms的cuda实现
-        void nms_kernel_invoker(float *parray, float nms_threshold, int max_objects, cudaStream_t stream);
+        void nms_kernel_invoker(float *parray, float nms_threshold, int max_objects, int NUM_BOX_ELEMENT, cudaStream_t stream);
 
         // yolov8后处理解析
         void decode_detect_yolov8_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                                  float confidence_threshold, float *invert_affine_matrix,
-                                                 float *parray, int MAX_IMAGE_BOXES, cudaStream_t stream);
+                                                 float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream);
     }
 }
 #endif // _POST_PROCESS_HPP_CUDA_

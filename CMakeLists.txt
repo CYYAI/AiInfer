@@ -74,5 +74,5 @@ install(DIRECTORY
 #     auto
 #     DEPENDS infer
 #     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/workspaces
-#     COMMAND ./infer -f weights/yolov8_face_mask_detect_0.951_int8_quantized_dynamic.engine -i res/test_demo.jpg
+#     COMMAND ./infer
 # )

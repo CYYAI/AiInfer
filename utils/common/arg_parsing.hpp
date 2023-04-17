@@ -15,7 +15,7 @@ namespace ai
         {
             std::string model_path = "";      // 用来接收命令行传递的模型路径
             std::string image_path = "";      // 用来接收命令行传递的要推理图片的路径
-            std::string device_type = "gpu";  // 用于gpu、cpu推理，注：如果是tensorrt推理引擎则只有gpu方式
+            std::string device_type = "gpu";  // 用于gpu、cpu推理，注：如果是tensorrt推理引擎cpu是指前后处理是cpu
             std::string backend = "tensorrt"; // 选择要使用的推理后端tensorrt、openvino、ncnn、mnn等
 
             int batch_size = 1;     // 模型推理时需要batch_size张图片同时推理

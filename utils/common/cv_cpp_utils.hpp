@@ -51,7 +51,7 @@ namespace ai
             // out = (x * alpha - mean) / std
             static Norm mean_std(const float mean[3], const float std[3], float alpha = 1 / 255.0f, ChannelType channel_type = ChannelType::BGR);
             // out = x * alpha + beta
-            static Norm alpha_beta(float alpha, float beta = 0, ChannelType channel_type = ChannelType::BGR);
+            static Norm alpha_beta(float alpha, float beta = 0.0f, ChannelType channel_type = ChannelType::BGR);
             // None
             static Norm None();
         };

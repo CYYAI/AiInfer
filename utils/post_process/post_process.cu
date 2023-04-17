@@ -4,7 +4,7 @@ namespace ai
     namespace postprocess
     {
         // keepflag主要是用来进行nms时候判断是否将该框抛弃
-        const int NUM_BOX_ELEMENT = 7; // left, top, right, bottom, confidence, class, keepflag
+        // const int NUM_BOX_ELEMENT = 7; // left, top, right, bottom, confidence, class, keepflag
         static __device__ void affine_project(float *matrix, float x, float y, float *ox, float *oy)
         {
             *ox = matrix[0] * x + matrix[1] * y + matrix[2];
@@ -14,7 +14,7 @@ namespace ai
         static __global__ void decode_kernel_common(float *predict, int num_bboxes, int num_classes,
                                                     int output_cdim, float confidence_threshold,
                                                     float *invert_affine_matrix, float *parray,
-                                                    int MAX_IMAGE_BOXES)
+                                                    int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT)
         {
             int position = blockDim.x * blockIdx.x + threadIdx.x;
             if (position >= num_bboxes)
@@ -94,7 +94,7 @@ namespace ai
             return c_area / (a_area + b_area - c_area);
         }
 
-        static __global__ void nms_kernel(float *bboxes, int max_objects, float threshold)
+        static __global__ void nms_kernel(float *bboxes, int max_objects, float threshold, int NUM_BOX_ELEMENT)
         {
 
             int position = (blockDim.x * blockIdx.x + threadIdx.x);
@@ -131,7 +131,7 @@ namespace ai
         static __global__ void decode_kernel_v8_trans(float *predict, int num_bboxes, int num_classes,
                                                       int output_cdim, float confidence_threshold,
                                                       float *invert_affine_matrix, float *parray,
-                                                      int MAX_IMAGE_BOXES)
+                                                      int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT)
         {
             int position = blockDim.x * blockIdx.x + threadIdx.x;
             if (position >= num_bboxes)
@@ -180,27 +180,27 @@ namespace ai
 
         void decode_detect_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                           float confidence_threshold, float *invert_affine_matrix,
-                                          float *parray, int MAX_IMAGE_BOXES, cudaStream_t stream)
+                                          float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream)
         {
             auto grid = CUDATools::grid_dims(num_bboxes);
             auto block = CUDATools::block_dims(num_bboxes);
 
             checkCudaKernel(decode_kernel_common<<<grid, block, 0, stream>>>(
                 predict, num_bboxes, num_classes, output_cdim, confidence_threshold, invert_affine_matrix,
-                parray, MAX_IMAGE_BOXES));
+                parray, MAX_IMAGE_BOXES, NUM_BOX_ELEMENT));
         }
 
-        void nms_kernel_invoker(float *parray, float nms_threshold, int max_objects, cudaStream_t stream)
+        void nms_kernel_invoker(float *parray, float nms_threshold, int max_objects, int NUM_BOX_ELEMENT, cudaStream_t stream)
         {
 
             auto grid = CUDATools::grid_dims(max_objects);
             auto block = CUDATools::block_dims(max_objects);
-            checkCudaKernel(nms_kernel<<<grid, block, 0, stream>>>(parray, max_objects, nms_threshold));
+            checkCudaKernel(nms_kernel<<<grid, block, 0, stream>>>(parray, max_objects, nms_threshold, NUM_BOX_ELEMENT));
         }
 
         void decode_detect_yolov8_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                                  float confidence_threshold, float *invert_affine_matrix,
-                                                 float *parray, int MAX_IMAGE_BOXES, cudaStream_t stream)
+                                                 float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream)
         {
             auto grid = CUDATools::grid_dims(num_bboxes);
             auto block = CUDATools::block_dims(num_bboxes);
@@ -210,7 +210,7 @@ namespace ai
             // 2. 从解析结果层面解决，但这会造成kernel函数执行线程存储体的冲突且冲突是最大的，所以这个方法速度稍慢，本节用这个
             checkCudaKernel(decode_kernel_v8_trans<<<grid, block, 0, stream>>>(
                 predict, num_bboxes, num_classes, output_cdim, confidence_threshold, invert_affine_matrix,
-                parray, MAX_IMAGE_BOXES));
+                parray, MAX_IMAGE_BOXES, NUM_BOX_ELEMENT));
         }
     }
 }
