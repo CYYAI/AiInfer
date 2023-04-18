@@ -37,9 +37,9 @@ namespace trt
         }
         // __native_engine_context的方法实现 end
 
-        // InferImpl的方法实现 start
+        // InferTRT的方法实现 start
 
-        bool InferImpl::construct_context(std::vector<unsigned char> &trtFile)
+        bool InferTRT::construct_context(std::vector<unsigned char> &trtFile)
         {
             this->context_ = make_shared<__native_engine_context>();
             if (!this->context_->construct(trtFile))
@@ -51,7 +51,7 @@ namespace trt
             return true;
         }
 
-        bool InferImpl::load(const string &engine_file)
+        bool InferTRT::load(const string &engine_file)
         {
             std::vector<unsigned char> data = ai::utils::load_file(engine_file);
             if (data.empty())
@@ -62,7 +62,7 @@ namespace trt
             return this->construct_context(data);
         }
 
-        void InferImpl::setup()
+        void InferTRT::setup()
         {
             auto engine = this->context_->engine_;
             int nbBindings = engine->getNbBindings();
@@ -75,7 +75,7 @@ namespace trt
             }
         }
 
-        int InferImpl::index(const std::string &name)
+        int InferTRT::index(const std::string &name)
         {
             auto iter = binding_name_to_index_.find(name);
             Assertf(iter != binding_name_to_index_.end(), "Can not found the binding name: %s",
@@ -83,39 +83,39 @@ namespace trt
             return iter->second;
         }
 
-        bool InferImpl::forward(const std::vector<void *> &bindings, void *stream, void *input_consum_event)
+        bool InferTRT::forward(const std::vector<void *> &bindings, void *stream, void *input_consum_event)
         {
             return this->context_->context_->enqueueV2((void **)bindings.data(), (cudaStream_t)stream,
                                                        (cudaEvent_t *)input_consum_event);
         }
 
-        std::vector<int> InferImpl::static_dims(const std::string &name)
+        std::vector<int> InferTRT::get_network_dims(const std::string &name)
         {
-            return static_dims(index(name));
+            return get_network_dims(index(name));
         }
 
-        std::vector<int> InferImpl::static_dims(int ibinding)
+        std::vector<int> InferTRT::get_network_dims(int ibinding)
         {
             auto dim = this->context_->engine_->getBindingDimensions(ibinding);
             return std::vector<int>(dim.d, dim.d + dim.nbDims);
         }
 
-        int InferImpl::num_bindings()
+        int InferTRT::num_bindings()
         {
             return this->context_->engine_->getNbBindings();
         }
 
-        bool InferImpl::is_input(int ibinding)
+        // bool InferTRT::is_input(int ibinding)
+        // {
+        //     return this->context_->engine_->bindingIsInput(ibinding);
+        // }
+
+        bool InferTRT::set_network_dims(const std::string &name, const std::vector<int> &dims)
         {
-            return this->context_->engine_->bindingIsInput(ibinding);
+            return this->set_network_dims(index(name), dims);
         }
 
-        bool InferImpl::set_run_dims(const std::string &name, const std::vector<int> &dims)
-        {
-            return this->set_run_dims(index(name), dims);
-        }
-
-        bool InferImpl::set_run_dims(int ibinding, const std::vector<int> &dims)
+        bool InferTRT::set_network_dims(int ibinding, const std::vector<int> &dims)
         {
             Dims d;
             memcpy(d.d, dims.data(), sizeof(int) * dims.size());
@@ -123,7 +123,7 @@ namespace trt
             return this->context_->context_->setBindingDimensions(ibinding, d);
         }
 
-        bool InferImpl::has_dynamic_dim()
+        bool InferTRT::has_dynamic_dim()
         {
             // check if any input or output bindings have dynamic shapes
             int numBindings = this->context_->engine_->getNbBindings();
@@ -139,7 +139,7 @@ namespace trt
             return false;
         }
 
-        std::string InferImpl::format_shape(const Dims &shape)
+        std::string InferTRT::format_shape(const Dims &shape)
         {
             stringstream output;
             char buf[64];
@@ -152,7 +152,7 @@ namespace trt
             return output.str();
         }
 
-        void InferImpl::print()
+        void InferTRT::print()
         {
             INFO("Infer %p [%s]", this, has_dynamic_dim() ? "DynamicShape" : "StaticShape");
 
@@ -184,11 +184,11 @@ namespace trt
             }
         }
 
-        // InferImpl的方法实现 end
+        // InferTRT的方法实现 end
 
         Infer *loadraw(const std::string &file)
         {
-            InferImpl *impl = new InferImpl();
+            InferTRT *impl = new InferTRT();
             if (!impl->load(file))
             {
                 delete impl;
@@ -199,7 +199,7 @@ namespace trt
 
         std::shared_ptr<Infer> load(const std::string &file)
         {
-            return std::shared_ptr<InferImpl>((InferImpl *)loadraw(file));
+            return std::shared_ptr<InferTRT>((InferTRT *)loadraw(file));
         }
     }
 }

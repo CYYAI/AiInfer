@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
-#include "application/trt_yolov8_cuda/yolov8_face_detect.hpp"
-#include "application/trt_yolov8_cpp/yolov8_face_detect.hpp"
+#include "application/tensorrt_demo/trt_yolov8_cuda/yolov8_face_detect.hpp"
+#include "application/tensorrt_demo/trt_yolov8_cpp/yolov8_face_detect.hpp"
 #define DEVICE_NUM 1
 
 void trt_cuda_inference(ai::arg_parsing::Settings *s)

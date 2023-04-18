@@ -22,7 +22,7 @@ namespace tensorrt_infer
             this->trt_->print(); // 打印engine的一些基本信息
 
             // 获取输入的尺寸信息
-            auto input_dim = this->trt_->static_dims(0); // 获取输入维度信息
+            auto input_dim = this->trt_->get_network_dims(0); // 获取输入维度信息
             model_info->m_preProcCfg.infer_batch_size = input_dim[0];
             model_info->m_preProcCfg.network_input_channels_ = input_dim[1];
             model_info->m_preProcCfg.network_input_height_ = input_dim[2];
@@ -33,7 +33,7 @@ namespace tensorrt_infer
             model_info->m_preProcCfg.normalize_ = Norm::alpha_beta(1 / 255.0f, 0.0f, ChannelType::RGB);
 
             // 获取输出的尺寸信息
-            auto output_dim = this->trt_->static_dims(1);
+            auto output_dim = this->trt_->get_network_dims(1);
             model_info->m_postProcCfg.bbox_head_dims_ = output_dim;
             model_info->m_postProcCfg.bbox_head_dims_output_numel_ = output_dim[1] * output_dim[2];
             if (model_info->m_postProcCfg.num_classes_ == 0)
@@ -221,14 +221,14 @@ namespace tensorrt_infer
                 return {};
 
             // 动态设置batch size
-            auto input_dims = trt_->static_dims(0);
+            auto input_dims = trt_->get_network_dims(0);
             if (model_info->m_preProcCfg.infer_batch_size != num_image)
             {
                 if (model_info->m_preProcCfg.isdynamic_model_)
                 {
                     model_info->m_preProcCfg.infer_batch_size = num_image;
                     input_dims[0] = num_image;
-                    if (!trt_->set_run_dims(0, input_dims)) // 重新绑定输入batch，返回值类型是bool
+                    if (!trt_->set_network_dims(0, input_dims)) // 重新绑定输入batch，返回值类型是bool
                         return {};
                 }
                 else
