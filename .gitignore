@@ -5,3 +5,4 @@ workspaces/cuda_res
 workspaces/cpp_res
 workspaces/weights
 workspaces/infer
+workspaces/install

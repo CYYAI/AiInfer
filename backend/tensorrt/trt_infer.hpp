@@ -7,7 +7,7 @@
 #include <NvInfer.h>
 
 #include <memory>
-#include "backend/backend_infer.hpp"
+#include "inferbase/backend_infer.hpp"
 #include "common/utils.hpp"
 
 namespace trt

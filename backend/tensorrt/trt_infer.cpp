@@ -1,4 +1,4 @@
-#include "infer.hpp"
+#include "trt_infer.hpp"
 namespace trt
 {
     namespace infer

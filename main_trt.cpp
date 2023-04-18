@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
-#include "application/tensorrt_demo/trt_yolov8_cuda/yolov8_face_detect.hpp"
-#include "application/tensorrt_demo/trt_yolov8_cpp/yolov8_face_detect.hpp"
+#include "trt_yolov8_cuda/yolov8_face_detect.hpp"
+#include "trt_yolov8_cpp/yolov8_face_detect.hpp"
 #define DEVICE_NUM 1
 
 void trt_cuda_inference(ai::arg_parsing::Settings *s)
@@ -89,17 +89,12 @@ int main(int argc, char *argv[])
         return RETURN_FAIL;
     }
     ai::arg_parsing::printArgs(&s);
+
+    CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu，cpu版本/gpu版本都要设置，因为tensorrt没有cpu推理
     if (!strcmp(s.device_type.c_str(), "gpu"))
-    {
-        CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu
-        if (!strcmp(s.backend.c_str(), "tensorrt"))
-            trt_cuda_inference(&s);
-    }
+        trt_cuda_inference(&s); // tensorrt的gpu版本推理：模型前处理和后处理都是使用cuda实现
     else if (!strcmp(s.device_type.c_str(), "cpu"))
-    {
-        if (!strcmp(s.backend.c_str(), "tensorrt"))
-            trt_cpp_inference(&s);
-    }
+        trt_cpp_inference(&s); // tensorrt的cpu版本推理：模型前处理和后处理都是使用cpu实现
     else
     {
         INFO("Device Type can be [gpu/cpu], can't be %s", s.device_type);
