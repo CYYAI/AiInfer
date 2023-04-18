@@ -11,28 +11,29 @@ set(CMAKE_INSTALL_PREFIX ${EXECUTABLE_OUTPUT_PATH}/install/) # make install时�
 # https://developer.nvidia.com/zh-cn/cuda-gpus#compute
 set(CUDA_NVCC_FLAGS "-gencode=arch=compute_86,code=sm_86;-G;-g;-O0;-w")
 
-find_package(CUDA REQUIRED)
-find_package(OpenCV REQUIRED)
-set(CUDA_DIR "/usr/local/cuda-11.1") # 设置cuda根目录，设置你自己的即可
+# 寻找cuda和opencv库
+find_package(CUDA REQUIRED) # 这个默认你本机已经安装
+find_package(OpenCV REQUIRED) # 如果你没安装，sudo apt-get install libopencv-dev
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/utils
     ${OpenCV_INCLUDE_DIRS}
-    ${CUDA_DIR}/include
+    ${CUDA_INCLUDE_DIRS}
 )
+# 具体的cuda_lib库命名可以看 https://cmake.org/cmake/help/latest/module/FindCUDA.html
 link_directories(
-    ${CUDA_DIR}/lib64
+    # ${CUDA_LIBRARIES}
+    # ${CUDA_cublas_LIBRARY}
+    # ${CUDA_cudart_static_LIBRARY}
+    ${CUDA_TOOLKIT_ROOT_DIR}/lib64
 )
 
 # 将utils里写好的cu文件编译成so库，方便后面调用
 file(GLOB_RECURSE cuda_srcs
-    ${PROJECT_SOURCE_DIR}/utils/*.cu)
-cuda_add_library(code_cu SHARED ${cuda_srcs})
-
-# 将utils里的所有cpp文件编译成so库，方便后面调用
-file(GLOB_RECURSE cpp_srcs
-    ${PROJECT_SOURCE_DIR}/utils/*.cpp)
-add_library(code_cpp SHARED ${cpp_srcs})
+    ${PROJECT_SOURCE_DIR}/utils/*.cu
+    ${PROJECT_SOURCE_DIR}/utils/*.cpp
+)
+cuda_add_library(utils_cpp_cu SHARED ${cuda_srcs})
 
 set(THRID_LINK_LIBS
     cuda
@@ -40,12 +41,11 @@ set(THRID_LINK_LIBS
     cudnn
     pthread
     ${OpenCV_LIBS}
-    code_cu
-    code_cpp
+    utils_cpp_cu
 )
 
 # 设置要install的库文件
-set(INSTALL_LIBS code_cu code_cpp)
+set(INSTALL_LIBS utils_cpp_cu)
 set(INSTALL_INCLUDE_PATH
     ${PROJECT_SOURCE_DIR}/utils/
 )
@@ -70,7 +70,7 @@ if(${TARGET_PLAFORM} STREQUAL  "tensorrt")
         ${PROJECT_SOURCE_DIR}/application/tensorrt_demo/*.cpp
     )
     add_library(trt_cpp SHARED ${tensorrt_cpps})
-    add_executable(infer main_trt.cpp ${trt_cpp} ${cpp_srcs})
+    add_executable(infer main/main_trt.cpp ${trt_cpp} ${cpp_srcs})
     target_link_libraries(infer trt_cpp ${THRID_LINK_LIBS} nvinfer)
 
     # trt要追加install的库
