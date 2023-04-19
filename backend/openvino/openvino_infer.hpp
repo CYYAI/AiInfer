@@ -1,27 +1,17 @@
-#ifndef _TRT_INFER_HPP_
-#define _TRT_INFER_HPP_
+#ifndef _OPENVINO_INFER_HPP_
+#define _OPENVINO_INFER_HPP_
 
-// tensorrt 导入的库
-#include <logger.h>
-#include <parserOnnxConfig.h>
-#include <NvInfer.h>
+// openvino 导入的库
+#include <openvino/openvino.hpp>
 
 #include <memory>
 #include "inferbase/backend_infer.hpp"
 #include "common/utils.hpp"
-namespace trt
+namespace openvino
 {
     namespace infer
     {
-        using namespace nvinfer1;
         using namespace ai::backend;
-        // 为了适配tensorrt7.xx和8.xx
-        template <typename _T>
-        static void destroy_nvidia_pointer(_T *ptr)
-        {
-            if (ptr)
-                ptr->destroy();
-        }
 
         /* 此类是为了初始化tensorrt推理需要用到的 rutime,engine,context */
         class __native_engine_context
@@ -78,4 +68,4 @@ namespace trt
     }
 }
 
-#endif // _TRT_INFER_HPP_
+#endif // _OPENVINO_INFER_HPP_

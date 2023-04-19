@@ -1,8 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
-#include "trt_yolov8_cuda/yolov8_face_detect.hpp"
-#include "trt_yolov8_cpp/yolov8_face_detect.hpp"
-#define DEVICE_NUM 1
+#include "yolov8_det_app/yolov8_cuda/yolov8_face_detect.hpp"
+#include "yolov8_det_app/yolov8_cpp/yolov8_face_detect.hpp"
 
 void trt_cuda_inference(ai::arg_parsing::Settings *s)
 {
@@ -82,6 +81,9 @@ void trt_cpp_inference(ai::arg_parsing::Settings *s)
 
 int main(int argc, char *argv[])
 {
+#ifdef TENSORRT
+    INFO("now runing trt backend......");
+#endif
     ai::arg_parsing::Settings s;
     if (parseArgs(argc, argv, &s) == RETURN_FAIL)
     {
@@ -91,6 +93,8 @@ int main(int argc, char *argv[])
     ai::arg_parsing::printArgs(&s);
 
     CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu，cpu版本/gpu版本都要设置，因为tensorrt没有cpu推理
+
+    // gpu、cpu代码可建立一个纯虚类进行合并，但这里为了演示就拆分了，其实大多数代码都是相似的
     if (!strcmp(s.device_type.c_str(), "gpu"))
         trt_cuda_inference(&s); // tensorrt的gpu版本推理：模型前处理和后处理都是使用cuda实现
     else if (!strcmp(s.device_type.c_str(), "cpu"))

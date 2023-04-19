@@ -1,19 +1,20 @@
-#ifndef _YOLOV8_FACE_DETECT_CPP_HPP_
-#define _YOLOV8_FACE_DETECT_CPP_HPP_
+#ifndef _YOLOV8_FACE_DETECT_CUDA_HPP_
+#define _YOLOV8_FACE_DETECT_CUDA_HPP_
 #include <memory>
+#ifdef TENSORRT
 #include "trt_infer.hpp"
+#endif
 #include "common/model_info.hpp"
 #include "common/utils.hpp"
 #include "common/cv_cpp_utils.hpp"
 #include "common/memory.hpp"
-#include "pre_process/pre_process.hpp"
-#include "post_process/post_process.hpp"
+#include "pre_process/pre_process.cuh"
+#include "post_process/post_process.cuh"
 
 namespace tensorrt_infer
 {
-    namespace yolov8_cpp
+    namespace yolov8_cuda
     {
-        using namespace trt::infer;
         using namespace ai::modelInfo;
         using namespace ai::utils;
         using namespace ai::cvUtil;
@@ -35,8 +36,10 @@ namespace tensorrt_infer
             BatchBoxArray forwards(const std::vector<Image> &images);
 
             // 模型前后处理
-            std::tuple<float, int, int> preprocess_cpu(int ibatch, const Image &image);
-            void postprocess_cpu(int ibatch);
+            void preprocess_gpu(int ibatch, const Image &image,
+                                shared_ptr<Memory<unsigned char>> preprocess_buffer, AffineMatrix &affine,
+                                cudaStream_t stream_);
+            void postprocess_gpu(int ibatch, cudaStream_t stream_);
             BatchBoxArray parser_box(int num_image);
 
             // draw image
@@ -44,22 +47,24 @@ namespace tensorrt_infer
             void draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir);
 
         private:
-            std::shared_ptr<Infer> trt_;
+            std::shared_ptr<ai::backend::Infer> model_;
             std::shared_ptr<ModelInfo> model_info = nullptr;
 
             // 仿射矩阵的声明
+            std::vector<AffineMatrix> affine_matrixs;
             const uint8_t const_value = 114; // 图片resize补边时的值
 
-            // 收集每张图片的缩放尺寸
-            std::vector<std::tuple<float, int, int>> pad_scale_vec;
-
             // 使用自定义的Memory类用来申请gpu/cpu内存
+            std::vector<std::shared_ptr<Memory<unsigned char>>> preprocess_buffers_;
             Memory<float> input_buffer_, bbox_predict_, output_boxarray_;
 
             // 使用cuda流进行操作
             cudaStream_t cu_stream;
+
+            // time
+            Timer timer;
         };
     }
 }
 
-#endif // _YOLOV8_FACE_DETECT_CPP_HPP_
+#endif // _YOLOV8_FACE_DETECT_CUDA_HPP_
