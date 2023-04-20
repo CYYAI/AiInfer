@@ -11,13 +11,11 @@ namespace ai
         class Infer
         {
         public:
+            virtual int index(const std::string &name) = 0; // 输入输出name to index
             virtual bool forward(const std::vector<void *> &bindings, void *stream = nullptr,
-                                 void *input_consum_event = nullptr) = 0;           // 执行推理操作
-            virtual int index(const std::string &name) = 0;                         // 输入输出name to index
+                                 void *input_consum_event = nullptr) = 0;           // trt执行推理操作
             virtual std::vector<int> get_network_dims(const std::string &name) = 0; // 根据输入输出名称获取模型输入输出维度
             virtual std::vector<int> get_network_dims(int ibinding) = 0;            // 根据index获取模型输入输出维度
-            virtual int num_bindings() = 0;                                         // 判断网络的输入输出个数
-            // virtual bool is_input(int ibinding) = 0;                           // 判断该索引是否是网络输入
             virtual bool set_network_dims(const std::string &name, const std::vector<int> &dims) = 0;
             virtual bool set_network_dims(int ibinding, const std::vector<int> &dims) = 0; // 设置输入的动态shape
             virtual bool has_dynamic_dim() = 0;                                            // 判断是动态shape输入还是静态shape输入

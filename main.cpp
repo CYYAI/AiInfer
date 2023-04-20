@@ -81,9 +81,6 @@ void trt_cpp_inference(ai::arg_parsing::Settings *s)
 
 int main(int argc, char *argv[])
 {
-#ifdef TENSORRT
-    INFO("now runing trt backend......");
-#endif
     ai::arg_parsing::Settings s;
     if (parseArgs(argc, argv, &s) == RETURN_FAIL)
     {

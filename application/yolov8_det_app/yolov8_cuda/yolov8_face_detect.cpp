@@ -17,10 +17,8 @@ namespace tensorrt_infer
             model_info->m_postProcCfg.confidence_threshold_ = score_thr;
             model_info->m_postProcCfg.nms_threshold_ = nms_thr;
 
-#ifdef TENSORRT
             this->model_ = trt::infer::load(engine_file); // 加载infer对象
-#endif
-            this->model_->print(); // 打印engine的一些基本信息
+            this->model_->print();                        // 打印engine的一些基本信息
 
             // 获取输入的尺寸信息
             auto input_dim = this->model_->get_network_dims(0); // 获取输入维度信息

@@ -7,7 +7,7 @@
 #include <NvInfer.h>
 
 #include <memory>
-#include "inferbase/backend_infer.hpp"
+#include "backend/backend_infer.hpp"
 #include "common/utils.hpp"
 namespace trt
 {
@@ -58,8 +58,6 @@ namespace trt
             virtual int index(const std::string &name) override; // 根据name寻找index
             virtual std::vector<int> get_network_dims(const std::string &name) override;
             virtual std::vector<int> get_network_dims(int ibinding) override; // 获取模型engine的输入输出的维度信息，更加常用
-            virtual int num_bindings() override;                              // 获取网络的输入输出个数
-            // virtual bool is_input(int ibinding) override;                // 判断ibinding是否是输入
             virtual bool set_network_dims(const std::string &name, const std::vector<int> &dims) override;
             virtual bool set_network_dims(int ibinding, const std::vector<int> &dims) override; // 设置动态shape，很重要
 

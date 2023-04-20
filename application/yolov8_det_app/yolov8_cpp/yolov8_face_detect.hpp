@@ -1,9 +1,7 @@
 #ifndef _YOLOV8_FACE_DETECT_CPP_HPP_
 #define _YOLOV8_FACE_DETECT_CPP_HPP_
 #include <memory>
-#ifdef TENSORRT
-#include "trt_infer.hpp"
-#endif
+#include "backend/tensorrt/trt_infer.hpp"
 #include "common/model_info.hpp"
 #include "common/utils.hpp"
 #include "common/cv_cpp_utils.hpp"

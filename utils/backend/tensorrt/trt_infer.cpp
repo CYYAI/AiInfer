@@ -1,5 +1,5 @@
-#include "openvino_infer.hpp"
-namespace openvino
+#include "trt_infer.hpp"
+namespace trt
 {
     namespace infer
     {
@@ -99,16 +99,6 @@ namespace openvino
             auto dim = this->context_->engine_->getBindingDimensions(ibinding);
             return std::vector<int>(dim.d, dim.d + dim.nbDims);
         }
-
-        int InferTRT::num_bindings()
-        {
-            return this->context_->engine_->getNbBindings();
-        }
-
-        // bool InferTRT::is_input(int ibinding)
-        // {
-        //     return this->context_->engine_->bindingIsInput(ibinding);
-        // }
 
         bool InferTRT::set_network_dims(const std::string &name, const std::vector<int> &dims)
         {
