@@ -6,3 +6,4 @@ workspaces/cpp_res
 workspaces/weights
 workspaces/infer
 workspaces/install
+workspaces/res

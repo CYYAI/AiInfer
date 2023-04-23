@@ -68,7 +68,7 @@ trtexec --onnx=xxx_dynamic.onnx \
 ```
 - onnx的int8量化，这个尽量不要用trtexec导出，精度会有点问题，建议使用
   - [商汤的ppq的int8量化工具,支持tensorrt|openvino|mnn|ncnn|...](https://github.com/openppl-public/ppq)
-  - [ppq不会使用的看yolov6的量化教程->](https://github.com/meituan/YOLOv6/tree/main/tools/quantization/ppq)
+  - [ppq不会使用的看yolov6的量化教程:](https://github.com/meituan/YOLOv6/tree/main/tools/quantization/ppq)
 </details>
 
 <details>
