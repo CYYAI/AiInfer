@@ -106,6 +106,16 @@ cd workspaces
 ```
 </details>
 
+<details>
+<summary>4. 制作成c++的sdk,交付项目</summary>
+
+```bash
+cd build
+make install
+# 然后你会在workspaces下看到一个install文件夹，这里面就是你要交付的include文件和so库
+```
+</details>
+
 ## B站同步视频讲解
 - coming soon
 ## 附录
