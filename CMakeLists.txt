@@ -15,7 +15,8 @@ find_package(CUDA REQUIRED) # 这个默认你本机已经安装
 find_package(OpenCV REQUIRED) # 如果你没安装，sudo apt-get install libopencv-dev
 
 # 4. 设置tensorrt的主目录
-set(TensorRT_ROOT "/home/yyds/softwares/TensorRT-7.2.3.4") # 设置tensorrt7.xx/8.xx根目录，改为你自己的即可
+# set(TensorRT_ROOT "/home/yyds/softwares/TensorRT-7.2.3.4") # 设置tensorrt7.xx/8.xx根目录，改为你自己的即可
+set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-8.6.0.12") # 设置tensorrt7.xx/8.xx根目录，改为你自己的即可
 
 # 5. include所有要用到的hpp文件路径
 include_directories(
@@ -55,7 +56,7 @@ file(GLOB_RECURSE cpp_cuda_srcs
 )
 cuda_add_library(utils_cu_cpp SHARED ${cpp_cuda_srcs})
 
-add_executable(infer mains/main_yolov8.cpp)
+add_executable(infer mains/main_rtdetr.cpp)
 # 8. 链接要所有要用到的so库
 target_link_libraries(infer
     utils_cu_cpp # 调用上面编译好的so库

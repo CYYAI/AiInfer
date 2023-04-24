@@ -178,6 +178,60 @@ namespace ai
             *pout_item++ = 1; // 1 = keep, 0 = ignore
         }
 
+        static __global__ void decode_kernel_rtdetr(float *predict, int num_bboxes, int num_classes,
+                                                    int output_cdim, float confidence_threshold,
+                                                    int scale_expand, float *parray,
+                                                    int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT)
+        {
+            int position = blockDim.x * blockIdx.x + threadIdx.x;
+            if (position >= num_bboxes)
+                return;
+
+            float *pitem = predict + output_cdim * position;
+
+            // 从多个类别得分中，找出最大类别的class_score+label
+            float *class_confidence = pitem + 4;
+            float confidence = *class_confidence++; // 取class1给confidence并且class_confidence自增1
+            int label = 0;
+            // ++class_confidence和class_confidence++在循环中执行的结果是一样的，都是执行完循环主体后再加一
+            for (int i = 1; i < num_classes; ++i, ++class_confidence)
+            {
+                if (*class_confidence > confidence)
+                {
+                    confidence = *class_confidence;
+                    label = i;
+                }
+            }
+
+            if (confidence < confidence_threshold)
+                return;
+
+            // cuda的原子操作：int atomicAdd(int *M,int V); 它们把一个内存位置M和一个数值V作为输入。
+            // 与原子函数相关的操作在V上执行，数值V早已存储在内存地址*M中了，然后将相加的结果写到同样的内存位置中。
+            int index = atomicAdd(parray, 1); // 所以这段代码意思是用parray[0]来计算boxes的总个数
+            if (index >= MAX_IMAGE_BOXES)
+                return;
+
+            float cx = *pitem++;
+            float cy = *pitem++;
+            float width = *pitem++;
+            float height = *pitem++;
+            float left = (cx - width * 0.5f) * scale_expand;
+            float top = (cy - height * 0.5f) * scale_expand;
+            float right = (cx + width * 0.5f) * scale_expand;
+            float bottom = (cy + height * 0.5f) * scale_expand;
+
+            // parray+1之后的值全部用来存储boxes元素，每个框有NUM_BOX_ELEMENT个元素
+            float *pout_item = parray + 1 + index * NUM_BOX_ELEMENT;
+            *pout_item++ = left;
+            *pout_item++ = top;
+            *pout_item++ = right;
+            *pout_item++ = bottom;
+            *pout_item++ = confidence;
+            *pout_item++ = label;
+            *pout_item++ = 1; // 1 = keep, 0 = ignore
+        }
+
         void decode_detect_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                           float confidence_threshold, float *invert_affine_matrix,
                                           float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream)
@@ -210,6 +264,17 @@ namespace ai
             // 2. 从解析结果层面解决，但这会造成kernel函数执行线程存储体的冲突且冲突是最大的，所以这个方法速度稍慢，本节用这个
             checkCudaKernel(decode_kernel_v8_trans<<<grid, block, 0, stream>>>(
                 predict, num_bboxes, num_classes, output_cdim, confidence_threshold, invert_affine_matrix,
+                parray, MAX_IMAGE_BOXES, NUM_BOX_ELEMENT));
+        }
+
+        void decode_detect_rtdetr_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
+                                                 float confidence_threshold, int scale_expand, float *parray, int MAX_IMAGE_BOXES,
+                                                 int NUM_BOX_ELEMENT, cudaStream_t stream)
+        {
+            auto grid = CUDATools::grid_dims(num_bboxes);
+            auto block = CUDATools::block_dims(num_bboxes);
+            checkCudaKernel(decode_kernel_rtdetr<<<grid, block, 0, stream>>>(
+                predict, num_bboxes, num_classes, output_cdim, confidence_threshold, scale_expand,
                 parray, MAX_IMAGE_BOXES, NUM_BOX_ELEMENT));
         }
     }

@@ -23,6 +23,11 @@ namespace ai
         void decode_detect_yolov8_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                                  float confidence_threshold, float *invert_affine_matrix,
                                                  float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream);
+
+        // rtdetr后处理解析
+        void decode_detect_rtdetr_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
+                                                 float confidence_threshold, int scale_expand, float *parray, int MAX_IMAGE_BOXES,
+                                                 int NUM_BOX_ELEMENT, cudaStream_t stream);
     }
 }
 #endif // _POST_PROCESS_HPP_CUDA_
