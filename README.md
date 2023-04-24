@@ -28,6 +28,7 @@ AiInfer
     |--post_process # 后处理实现目录，包括cpp和cuda后处理加速
     |--pre_process # 前处理实现目录，包括cpp和cuda前处理加速
   |--workspaces # 工作目录，里面可以放一些测试图片/视频、模型，然后在main.cpp中直接使用相对路径
+  |--mains # 这里面是main.cpp合集，这里采用每个app单独对应一个main文件，便于理解，写一起太冗余
 ```
 
 ## 如何开始

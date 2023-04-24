@@ -51,10 +51,11 @@ file(GLOB_RECURSE cpp_cuda_srcs
     ${PROJECT_SOURCE_DIR}/utils/*.cu
     ${TensorRT_ROOT}/samples/common/logger.cpp # 引用对应版本的logger.cpp，用来适应多版本
     ${TensorRT_ROOT}/samples/common/sampleOptions.cpp 
+    ${TensorRT_ROOT}/samples/common/sampleUtils.cpp
 )
 cuda_add_library(utils_cu_cpp SHARED ${cpp_cuda_srcs})
 
-add_executable(infer main.cpp)
+add_executable(infer mains/main_yolov8.cpp)
 # 8. 链接要所有要用到的so库
 target_link_libraries(infer
     utils_cu_cpp # 调用上面编译好的so库
