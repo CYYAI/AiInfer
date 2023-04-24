@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
+#include "common/cv_cpp_utils.hpp"
 #include "rtdetr_det_app/rtdetr_cuda/rtdetr_detect.hpp"
 
 void trt_cuda_inference(ai::arg_parsing::Settings *s)
@@ -36,7 +37,7 @@ void trt_cuda_inference(ai::arg_parsing::Settings *s)
     if (!s->output_dir.empty())
     {
         ai::utils::rmtree(s->output_dir);
-        rtdetr_obj.draw_batch_rectangle(images, batched_result, s->output_dir);
+        ai::cvUtil::draw_batch_rectangle(images, batched_result, s->output_dir, s->classlabels);
     }
 }
 

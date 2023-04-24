@@ -35,34 +35,6 @@ namespace ai
             size_t IMAGE_MAX_BOXES_ADD_ELEMENT{0}; // MAX_IMAGE_BOXES * NUM_BOX_ELEMENT
 
             int num_classes_ = 0; // 类别，可以通过模型输出维度自动推出，也可以设置
-            // const std::vector<std::string> classlabels{"face", "face_mask"};
-            const std::vector<std::string> classlabels{"person", "bicycle", "car",
-                                                       "motorcycle", "airplane", "bus",
-                                                       "train", "truck", "boat",
-                                                       "traffic light", "fire hydrant", "stop sign",
-                                                       "parking meter", "bench", "bird",
-                                                       "cat", "dog", "horse",
-                                                       "sheep", "cow", "elephant",
-                                                       "bear", "zebra", "giraffe",
-                                                       "backpack", "umbrella", "handbag",
-                                                       "tie", "suitcase", "frisbee",
-                                                       "skis", "snowboard", "sports ball",
-                                                       "kite", "baseball bat", "baseball glove",
-                                                       "skateboard", "surfboard", "tennis racket",
-                                                       "bottle", "wine glass", "cup",
-                                                       "fork", "knife", "spoon",
-                                                       "bowl", "banana", "apple",
-                                                       "sandwich", "orange", "broccoli",
-                                                       "carrot", "hot dog", "pizza",
-                                                       "donut", "cake", "chair",
-                                                       "couch", "potted plant", "bed",
-                                                       "dining table", "toilet", "tv",
-                                                       "laptop", "mouse", "remote",
-                                                       "keyboard", "cell phone", "microwave",
-                                                       "oven", "toaster", "sink",
-                                                       "refrigerator", "book", "clock",
-                                                       "vase", "scissors", "teddy bear",
-                                                       "hair drier", "toothbrush"};
         };
 
         struct ModelInfo

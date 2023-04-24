@@ -2,6 +2,7 @@
 #define UTILS_ARG_PARSING_H_
 #include <iostream>
 #include <vector>
+#include <string>
 #include <stdlib.h>
 #include <getopt.h>
 
@@ -24,6 +25,34 @@ namespace ai
             // int number_of_threads = 4;
             int number_of_warmup_runs = 2; // 模型推理的预热，用来激活cuda核，是的计时更加准确
             std::string output_dir = "";   // 模型推理结果图片存储位置
+            // 下面是类名
+            const std::vector<std::string> classlabels{"person", "bicycle", "car",
+                                                       "motorcycle", "airplane", "bus",
+                                                       "train", "truck", "boat",
+                                                       "traffic light", "fire hydrant", "stop sign",
+                                                       "parking meter", "bench", "bird",
+                                                       "cat", "dog", "horse",
+                                                       "sheep", "cow", "elephant",
+                                                       "bear", "zebra", "giraffe",
+                                                       "backpack", "umbrella", "handbag",
+                                                       "tie", "suitcase", "frisbee",
+                                                       "skis", "snowboard", "sports ball",
+                                                       "kite", "baseball bat", "baseball glove",
+                                                       "skateboard", "surfboard", "tennis racket",
+                                                       "bottle", "wine glass", "cup",
+                                                       "fork", "knife", "spoon",
+                                                       "bowl", "banana", "apple",
+                                                       "sandwich", "orange", "broccoli",
+                                                       "carrot", "hot dog", "pizza",
+                                                       "donut", "cake", "chair",
+                                                       "couch", "potted plant", "bed",
+                                                       "dining table", "toilet", "tv",
+                                                       "laptop", "mouse", "remote",
+                                                       "keyboard", "cell phone", "microwave",
+                                                       "oven", "toaster", "sink",
+                                                       "refrigerator", "book", "clock",
+                                                       "vase", "scissors", "teddy bear",
+                                                       "hair drier", "toothbrush"};
         };
         int parseArgs(int argc, char **argv, Settings *s); // 解析命令行输入的参数并赋值给Settings
         void printArgs(Settings *s);                       // 打印所有的参数

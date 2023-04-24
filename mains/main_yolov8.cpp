@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
+#include "common/cv_cpp_utils.hpp"
 #include "yolov8_det_app/yolov8_cuda/yolov8_detect.hpp"
 #include "yolov8_det_app/yolov8_cpp/yolov8_detect.hpp"
 
@@ -37,7 +38,7 @@ void trt_cuda_inference(ai::arg_parsing::Settings *s)
     if (!s->output_dir.empty())
     {
         ai::utils::rmtree(s->output_dir);
-        yolov8_obj.draw_batch_rectangle(images, batched_result, s->output_dir);
+        ai::cvUtil::draw_batch_rectangle(images, batched_result, s->output_dir, s->classlabels);
     }
 }
 
@@ -75,7 +76,7 @@ void trt_cpp_inference(ai::arg_parsing::Settings *s)
     if (!s->output_dir.empty())
     {
         ai::utils::rmtree(s->output_dir);
-        yolov8_obj.draw_batch_rectangle(images, batched_result, s->output_dir);
+        ai::cvUtil::draw_batch_rectangle(images, batched_result, s->output_dir, s->classlabels);
     }
 }
 

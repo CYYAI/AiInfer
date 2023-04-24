@@ -38,10 +38,6 @@ namespace tensorrt_infer
             void postprocess_cpu(int ibatch);
             BatchBoxArray parser_box(int num_image);
 
-            // draw image
-            void draw_one_image_rectangle(cv::Mat &image, BoxArray &result, const std::string &save_dir);
-            void draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir);
-
         private:
             std::shared_ptr<ai::backend::Infer> model_;
             std::shared_ptr<ModelInfo> model_info = nullptr;

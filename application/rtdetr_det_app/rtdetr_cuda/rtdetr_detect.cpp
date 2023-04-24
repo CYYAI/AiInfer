@@ -136,58 +136,6 @@ namespace tensorrt_infer
             return arrout;
         }
 
-        void RTDETRDetect::draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir)
-        {
-            for (int ib = 0; ib < (int)batched_result.size(); ++ib)
-            {
-                auto &objs = batched_result[ib];
-                auto &image = images[ib];
-                for (auto &obj : objs)
-                {
-                    uint8_t b, g, r;
-                    tie(b, g, r) = random_color(obj.class_label);
-                    cv::rectangle(image, cv::Point(obj.left, obj.top), cv::Point(obj.right, obj.bottom),
-                                  cv::Scalar(b, g, r), 2);
-                    auto name = model_info->m_postProcCfg.classlabels[obj.class_label];
-                    auto caption = cv::format("%s %.2f", name.c_str(), obj.confidence);
-                    int width = cv::getTextSize(caption, 0, 1, 2, nullptr).width + 10;
-                    cv::rectangle(image, cv::Point(obj.left - 3, obj.top - 33),
-                                  cv::Point(obj.left + width, obj.top), cv::Scalar(b, g, r), -1);
-                    cv::putText(image, caption, cv::Point(obj.left, obj.top - 5), 0, 1, cv::Scalar::all(0), 2,
-                                16);
-                }
-                if (mkdirs(save_dir))
-                {
-                    std::string save_path = path_join("%s/Infer_%d.jpg", save_dir.c_str(), ib);
-                    cv::imwrite(save_path, image);
-                }
-            }
-        }
-
-        void RTDETRDetect::draw_one_image_rectangle(cv::Mat &image, BoxArray &result, const std::string &save_dir)
-        {
-
-            for (auto &obj : result)
-            {
-                uint8_t b, g, r;
-                tie(b, g, r) = random_color(obj.class_label);
-                cv::rectangle(image, cv::Point(obj.left, obj.top), cv::Point(obj.right, obj.bottom),
-                              cv::Scalar(b, g, r), 2);
-                auto name = model_info->m_postProcCfg.classlabels[obj.class_label];
-                auto caption = cv::format("%s %.2f", name.c_str(), obj.confidence);
-                int width = cv::getTextSize(caption, 0, 1, 2, nullptr).width + 10;
-                cv::rectangle(image, cv::Point(obj.left - 3, obj.top - 33),
-                              cv::Point(obj.left + width, obj.top), cv::Scalar(b, g, r), -1);
-                cv::putText(image, caption, cv::Point(obj.left, obj.top - 5), 0, 1, cv::Scalar::all(0), 2,
-                            16);
-            }
-            if (mkdirs(save_dir))
-            {
-                std::string save_path = path_join("%s/Infer_one.jpg", save_dir.c_str());
-                cv::imwrite(save_path, image);
-            }
-        }
-
         BoxArray RTDETRDetect::forward(const Image &image)
         {
             auto output = forwards({image});

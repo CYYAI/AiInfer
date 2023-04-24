@@ -4,6 +4,7 @@
 #include <tuple>
 #include <string.h>
 #include <opencv2/opencv.hpp>
+#include "utils.hpp"
 
 namespace ai
 {
@@ -11,6 +12,7 @@ namespace ai
     {
 
         using namespace std;
+        using namespace ai::utils;
 
         // 统一模型的输入格式，方便后续进行输入的配置
         struct Image
@@ -81,6 +83,10 @@ namespace ai
         };
         typedef std::vector<Box> BoxArray;
         typedef std::vector<BoxArray> BatchBoxArray;
+
+        // draw image
+        void draw_one_image_rectangle(cv::Mat &image, BoxArray &result, const std::string &save_dir, const std::vector<std::string> &classlabels);
+        void draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels);
     }
 }
 
