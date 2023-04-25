@@ -1,8 +1,8 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
 #include "common/cv_cpp_utils.hpp"
-#include "yolov8_det_app/yolov8_cuda/yolov8_detect.hpp"
-#include "yolov8_det_app/yolov8_cpp/yolov8_detect.hpp"
+#include "yolov8_app/yolov8_det_cuda/yolov8_detect.hpp"
+#include "yolov8_app/yolov8_det_cpp/yolov8_detect.hpp"
 
 void trt_cuda_inference(ai::arg_parsing::Settings *s)
 {

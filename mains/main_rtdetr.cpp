@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     }
     ai::arg_parsing::printArgs(&s);
 
-    CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu，cpu版本/gpu版本都要设置，因为tensorrt没有cpu推理
+    CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu
 
     // gpu、cpu代码可建立一个纯虚类进行合并，但这里为了演示就拆分了，其实大多数代码都是相似的
     if (!strcmp(s.device_type.c_str(), "gpu"))

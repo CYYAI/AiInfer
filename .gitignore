@@ -1,7 +1,7 @@
 .vscode
 build
 workspaces/result_output
-workspaces/cuda_res
+workspaces/cuda_res*
 workspaces/cpp_res
 workspaces/weights
 workspaces/infer
