@@ -1,9 +1,9 @@
-#include "yolov8_detect.hpp"
+#include "yolov8_seg.hpp"
 namespace tensorrt_infer
 {
     namespace yolov8_cuda
     {
-        void YOLOv8Detect::initParameters(const std::string &engine_file, float score_thr, float nms_thr)
+        void YOLOv8Seg::initParameters(const std::string &engine_file, float score_thr, float nms_thr)
         {
             if (!file_exist(engine_file))
             {
@@ -31,23 +31,37 @@ namespace tensorrt_infer
             // 对输入的图片预处理进行配置,即，yolov8的预处理是除以255，并且是RGB通道输入
             model_info->m_preProcCfg.normalize_ = Norm::alpha_beta(1 / 255.0f, 0.0f, ChannelType::RGB);
 
-            // 获取输出的尺寸信息
-            auto output_dim = this->model_->get_network_dims(1);
-            model_info->m_postProcCfg.bbox_head_dims_ = output_dim;
-            model_info->m_postProcCfg.bbox_head_dims_output_numel_ = output_dim[1] * output_dim[2];
+            // seg分支的输出尺寸
+            auto output_seg_dim = this->model_->get_network_dims(1);
+            model_info->m_postProcCfg.seg_head_dims_ = output_seg_dim;
+            model_info->m_postProcCfg.seg_head_dims_output_numel_ = output_seg_dim[1] * output_seg_dim[2] * output_seg_dim[3];
+
+            // box分支的输出尺寸
+            auto output_box_dim = this->model_->get_network_dims(2);
+            model_info->m_postProcCfg.bbox_head_dims_ = output_box_dim;
+            model_info->m_postProcCfg.bbox_head_dims_output_numel_ = output_box_dim[1] * output_box_dim[2];
+
+            // 分类num
             if (model_info->m_postProcCfg.num_classes_ == 0)
-                model_info->m_postProcCfg.num_classes_ = model_info->m_postProcCfg.bbox_head_dims_[2] - 4; // yolov8
+                model_info->m_postProcCfg.num_classes_ = output_box_dim[2] - 4 - output_seg_dim[1]; // yolov8
+
+            // 框的最大数量和每个框的元素个数
+            model_info->m_postProcCfg.NUM_BOX_ELEMENT += 1;
             model_info->m_postProcCfg.IMAGE_MAX_BOXES_ADD_ELEMENT = model_info->m_postProcCfg.MAX_IMAGE_BOXES * model_info->m_postProcCfg.NUM_BOX_ELEMENT;
+
+            // 初始化seg后处理的scale系数
+            this->scale_to_predict_x = output_seg_dim[3] / (float)input_dim[3];
+            this->scale_to_predict_y = output_seg_dim[2] / (float)input_dim[2];
 
             CHECK(cudaStreamCreate(&cu_stream)); // 创建cuda流
         }
 
-        YOLOv8Detect::~YOLOv8Detect()
+        YOLOv8Seg::~YOLOv8Seg()
         {
             CHECK(cudaStreamDestroy(cu_stream)); // 销毁cuda流
         }
 
-        void YOLOv8Detect::adjust_memory(int batch_size)
+        void YOLOv8Seg::adjust_memory(int batch_size)
         {
             // 申请模型输入和模型输出所用到的内存
             input_buffer_.gpu(batch_size * model_info->m_preProcCfg.network_input_numel);           // 申请batch个模型输入的gpu内存
@@ -56,6 +70,9 @@ namespace tensorrt_infer
             // 申请模型解析成box时需要存储的内存,,+32是因为第一个数要设置为框的个数，防止内存溢出
             output_boxarray_.gpu(batch_size * (32 + model_info->m_postProcCfg.IMAGE_MAX_BOXES_ADD_ELEMENT));
             output_boxarray_.cpu(batch_size * (32 + model_info->m_postProcCfg.IMAGE_MAX_BOXES_ADD_ELEMENT));
+
+            // 申请segment分支所用的内存
+            segment_predict_.gpu(batch_size * model_info->m_postProcCfg.seg_head_dims_output_numel_);
 
             if ((int)preprocess_buffers_.size() < batch_size)
             {
@@ -71,9 +88,9 @@ namespace tensorrt_infer
             }
         }
 
-        void YOLOv8Detect::preprocess_gpu(int ibatch, const Image &image,
-                                          shared_ptr<Memory<unsigned char>> preprocess_buffer, AffineMatrix &affine,
-                                          cudaStream_t stream_)
+        void YOLOv8Seg::preprocess_gpu(int ibatch, const Image &image,
+                                       shared_ptr<Memory<unsigned char>> preprocess_buffer, AffineMatrix &affine,
+                                       cudaStream_t stream_)
         {
             if (image.channels != model_info->m_preProcCfg.network_input_channels_)
             {
@@ -110,7 +127,7 @@ namespace tensorrt_infer
                                                      model_info->m_preProcCfg.normalize_, stream_);
         }
 
-        void YOLOv8Detect::postprocess_gpu(int ibatch, cudaStream_t stream_)
+        void YOLOv8Seg::postprocess_gpu(int ibatch, cudaStream_t stream_)
         {
             // boxarray_device：对推理结果进行解析后要存储的gpu指针
             float *boxarray_device = output_boxarray_.gpu() + ibatch * (32 + model_info->m_postProcCfg.IMAGE_MAX_BOXES_ADD_ELEMENT);
@@ -130,30 +147,74 @@ namespace tensorrt_infer
                                model_info->m_postProcCfg.NUM_BOX_ELEMENT, stream_);
         }
 
-        BatchBoxArray YOLOv8Detect::parser_box(int num_image)
+        BatchSegBoxArray YOLOv8Seg::parser_box(int num_image)
         {
-            BatchBoxArray arrout(num_image);
+            BatchSegBoxArray arrout(num_image);
             for (int ib = 0; ib < num_image; ++ib)
             {
                 float *parray = output_boxarray_.cpu() + ib * (32 + model_info->m_postProcCfg.IMAGE_MAX_BOXES_ADD_ELEMENT);
                 int count = min(model_info->m_postProcCfg.MAX_IMAGE_BOXES, (int)*parray);
-                BoxArray &output = arrout[ib];
+                SegBoxArray &output = arrout[ib];
                 output.reserve(count); // 增加vector的容量大于或等于count的值
+
+                float *batch_mask_weights = bbox_predict_.gpu() + ib * model_info->m_postProcCfg.bbox_head_dims_output_numel_;
+                float *batch_mask_head_predict = segment_predict_.gpu() + ib * model_info->m_postProcCfg.seg_head_dims_output_numel_;
                 for (int i = 0; i < count; ++i)
                 {
                     float *pbox = parray + 1 + i * model_info->m_postProcCfg.NUM_BOX_ELEMENT;
                     int label = pbox[5];
                     int keepflag = pbox[6];
                     if (keepflag == 1)
-                        // left,top,right,bottom,confidence,class_label
-                        output.emplace_back(pbox[0], pbox[1], pbox[2], pbox[3], pbox[4], label);
+                    {
+                        SegBox result_object_box(pbox[0], pbox[1], pbox[2], pbox[3], pbox[4], label);
+                        int row_index = pbox[7];
+                        // 获取筛选的框中对应的32个mask weight
+                        float *mask_weights = batch_mask_weights + row_index * model_info->m_postProcCfg.bbox_head_dims_[2] +
+                                              4 + model_info->m_postProcCfg.num_classes_;
+
+                        /* 此时的pbox是相对于原图片的，然而mask分支是相对于160x160的
+                           要想获取放缩比例，还需得把pbox进行缩放*/
+                        float left, top, right, bottom;
+                        float *i2d = affine_matrixs[ib].i2d;
+                        affine_project(i2d, pbox[0], pbox[1], &left, &top);
+                        affine_project(i2d, pbox[2], pbox[3], &right, &bottom);
+                        // 此时box_width和box_height是相对于输入640x640的
+                        float box_width = right - left;
+                        float box_height = bottom - top;
+                        // 此时的mask_out是当前框相对于160x160的的mask宽高
+                        int mask_out_width = box_width * scale_to_predict_x + 0.5f;
+                        int mask_out_height = box_height * scale_to_predict_y + 0.5f;
+
+                        if (mask_out_width > 0 && mask_out_height > 0)
+                        {
+                            // box_mask的cpu内存申请
+                            result_object_box.seg = make_shared<InstanceSegmentMap>(mask_out_width, mask_out_height);
+                            unsigned char *mask_out_host = result_object_box.seg->data;
+
+                            // box_mask的gpu内存申请
+                            box_segment_predict_.release_gpu();
+                            int bytes_of_mask_out = mask_out_width * mask_out_height;
+                            unsigned char *mask_out_device = box_segment_predict_.gpu(bytes_of_mask_out);
+
+                            // 解析mask，并存入mask_out_host中
+                            decode_single_mask(left * scale_to_predict_x, top * scale_to_predict_y, mask_weights,
+                                               batch_mask_head_predict, model_info->m_postProcCfg.seg_head_dims_[3],
+                                               model_info->m_postProcCfg.seg_head_dims_[2], mask_out_device,
+                                               model_info->m_postProcCfg.seg_head_dims_[1], mask_out_width, mask_out_height, cu_stream);
+                            checkRuntime(cudaMemcpyAsync(mask_out_host, mask_out_device,
+                                                         box_segment_predict_.gpu_bytes(),
+                                                         cudaMemcpyDeviceToHost, cu_stream));
+                        }
+                        output.emplace_back(result_object_box);
+                    }
                 }
             }
+            checkRuntime(cudaStreamSynchronize(cu_stream)); // 阻塞cuda流等待其所有任务完成
 
             return arrout;
         }
 
-        BoxArray YOLOv8Detect::forward(const Image &image)
+        SegBoxArray YOLOv8Seg::forward(const Image &image)
         {
             auto output = forwards({image});
             if (output.empty())
@@ -161,7 +222,7 @@ namespace tensorrt_infer
             return output[0];
         }
 
-        BatchBoxArray YOLOv8Detect::forwards(const std::vector<Image> &images)
+        BatchSegBoxArray YOLOv8Seg::forwards(const std::vector<Image> &images)
         {
             int num_image = images.size();
             if (num_image == 0)
@@ -199,8 +260,8 @@ namespace tensorrt_infer
                 preprocess_gpu(i, images[i], preprocess_buffers_[i], affine_matrixs[i], cu_stream); // input_buffer_会获取到图片预处理好的值
 
             // 推理模型
-            float *bbox_output_device = bbox_predict_.gpu();                  // 获取推理后要存储结果的gpu指针
-            vector<void *> bindings{input_buffer_.gpu(), bbox_output_device}; // 绑定bindings作为输入进行forward
+            float *bbox_output_device = bbox_predict_.gpu();                                          // 获取推理后要存储结果的gpu指针
+            vector<void *> bindings{input_buffer_.gpu(), segment_predict_.gpu(), bbox_output_device}; // 绑定bindings作为输入进行forward
             if (!model_->forward(bindings, cu_stream))
             {
                 INFO("Failed to tensorRT forward.");

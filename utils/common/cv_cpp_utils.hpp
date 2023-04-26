@@ -66,6 +66,12 @@ namespace ai
             void compute(const std::tuple<int, int> &from, const std::tuple<int, int> &to);
         };
 
+        static void affine_project(float *matrix, float x, float y, float *ox, float *oy)
+        {
+            *ox = matrix[0] * x + matrix[1] * y + matrix[2];
+            *oy = matrix[3] * x + matrix[4] * y + matrix[5];
+        }
+
         // detect
         struct Box
         {
@@ -84,9 +90,41 @@ namespace ai
         typedef std::vector<Box> BoxArray;
         typedef std::vector<BoxArray> BatchBoxArray;
 
+        struct InstanceSegmentMap
+        {
+            int width = 0, height = 0;     // width % 8 == 0
+            unsigned char *data = nullptr; // is width * height memory
+
+            InstanceSegmentMap(int width, int height);
+            virtual ~InstanceSegmentMap();
+        };
+
+        struct SegBox
+        {
+            float left, top, right, bottom, confidence;
+            int class_label;
+            std::shared_ptr<InstanceSegmentMap> seg; // valid only in segment task
+
+            SegBox() = default;
+            SegBox(float left, float top, float right, float bottom, float confidence, int class_label)
+                : left(left),
+                  top(top),
+                  right(right),
+                  bottom(bottom),
+                  confidence(confidence),
+                  class_label(class_label) {}
+        };
+
+        typedef std::vector<SegBox> SegBoxArray;
+        typedef std::vector<SegBoxArray> BatchSegBoxArray;
+
         // draw image
         void draw_one_image_rectangle(cv::Mat &image, BoxArray &result, const std::string &save_dir, const std::vector<std::string> &classlabels);
         void draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels);
+
+        // draw seg image
+        void draw_batch_segment(std::vector<cv::Mat> &images, BatchSegBoxArray &batched_result, const std::string &save_dir,
+                                const std::vector<std::string> &classlabels, int img_mask_wh = 160, int network_input_wh = 640);
     }
 }
 

@@ -26,12 +26,18 @@ namespace ai
         {
             float confidence_threshold_{0.5f};
             float nms_threshold_{0.45f};
+
+            // 检测分支
             std::vector<int> bbox_head_dims_;
             size_t bbox_head_dims_output_numel_{0}; // 模型输出的大小，无需配置
 
+            // 分割分支
+            std::vector<int> seg_head_dims_;
+            size_t seg_head_dims_output_numel_{0}; // 模型输出的大小，无需配置
+
             // 模型输出结果解析时的一些参数设置,最好设置为const类型，以免改变
             int MAX_IMAGE_BOXES = 1024;
-            const int NUM_BOX_ELEMENT = 7;         // left, top, right, bottom, confidence, class,keepflag.一般是固定值，常不修改
+            int NUM_BOX_ELEMENT = 7;               // left, top, right, bottom, confidence, class,keepflag.一般是固定值，常不修改
             size_t IMAGE_MAX_BOXES_ADD_ELEMENT{0}; // MAX_IMAGE_BOXES * NUM_BOX_ELEMENT
 
             int num_classes_ = 0; // 类别，可以通过模型输出维度自动推出，也可以设置

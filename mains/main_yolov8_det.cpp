@@ -1,13 +1,13 @@
 #include <opencv2/opencv.hpp>
 #include "common/arg_parsing.hpp"
 #include "common/cv_cpp_utils.hpp"
-#include "rtdetr_det_app/rtdetr_cuda/rtdetr_detect.hpp"
+#include "yolov8_app/yolov8_det_cuda/yolov8_detect.hpp"
 
 void trt_cuda_inference(ai::arg_parsing::Settings *s)
 {
     ai::utils::Timer timer; // 创建
-    tensorrt_infer::rtdetr_cuda::RTDETRDetect rtdetr_obj;
-    rtdetr_obj.initParameters(s->model_path, s->score_thr);
+    tensorrt_infer::yolov8_cuda::YOLOv8Detect yolov8_obj;
+    yolov8_obj.initParameters(s->model_path, s->score_thr);
 
     // 判断图片路径是否存在
     if (!ai::utils::file_exist(s->image_path))
@@ -23,15 +23,15 @@ void trt_cuda_inference(ai::arg_parsing::Settings *s)
     std::vector<ai::cvUtil::Image> yoloimages(images.size());
     std::transform(images.begin(), images.end(), yoloimages.begin(), ai::cvUtil::cvimg_trans_func);
 
-    // 模型预热，如果要单张推理，请调用rtdetr_obj.forward
+    // 模型预热，如果要单张推理，请调用yolov8_obj.forward
     for (int i = 0; i < s->number_of_warmup_runs; ++i)
-        auto warmup_batched_result = rtdetr_obj.forwards(yoloimages);
+        auto warmup_batched_result = yolov8_obj.forwards(yoloimages);
 
     ai::cvUtil::BatchBoxArray batched_result;
     // 模型推理
     timer.start();
     for (int i = 0; i < s->loop_count; ++i)
-        batched_result = rtdetr_obj.forwards(yoloimages);
+        batched_result = yolov8_obj.forwards(yoloimages);
     timer.stop(ai::utils::path_join("Batch=%d, iters=%d,run infer mean time:", s->batch_size, s->loop_count).c_str(), s->loop_count);
 
     if (!s->output_dir.empty())
@@ -53,6 +53,5 @@ int main(int argc, char *argv[])
 
     CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu
     trt_cuda_inference(&s);            // tensorrt的gpu版本推理：模型前处理和后处理都是使用cuda实现
-
     return RETURN_SUCCESS;
 }

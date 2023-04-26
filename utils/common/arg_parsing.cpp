@@ -8,7 +8,6 @@ namespace ai
             std::cout
                 << "--model_path, -f: model artifacts folder path\n"
                 << "--image_path, -i: input image with full path\n"
-                << "--device_type, -d: device_type for model can be [cpu|gpu=default]\n"
                 << "--batch_size, -b: batch size can be [1=default]\n"
                 << "--score_thr, -s: filter threshold during post-processing of model results can be [0.5f=default]\n"
                 << "--device_id, -g: serial number of the gpu graphics card can be [0=defualt]\n"
@@ -27,7 +26,6 @@ namespace ai
                 static struct option long_options[] = {
                     {"model_path", required_argument, nullptr, 'f'},
                     {"image_path", required_argument, nullptr, 'i'},
-                    {"device_type", required_argument, nullptr, 'd'},
                     {"batch_size", required_argument, nullptr, 'b'},
                     {"score_thr", required_argument, nullptr, 's'},
                     {"device_id", required_argument, nullptr, 'g'},
@@ -40,7 +38,7 @@ namespace ai
                 int option_index = 0;
 
                 c = getopt_long(argc, argv,
-                                "f:i:d:b:s:g:c:w:o:", long_options,
+                                "f:i:b:s:g:c:w:o:", long_options,
                                 &option_index);
 
                 /* Detect the end of the options. */
@@ -54,9 +52,6 @@ namespace ai
                     break;
                 case 'i':
                     s->image_path = optarg;
-                    break;
-                case 'd':
-                    s->device_type = optarg;
                     break;
                 case 'b':
                     s->batch_size = strtol(optarg, nullptr, 10); // char字符转为int/long
@@ -93,7 +88,6 @@ namespace ai
 
             std::cout << "model path set to: " << s->model_path << "\n";
             std::cout << "image path set to: " << s->image_path << "\n";
-            std::cout << "device_type set to: " << s->device_type << "\n";
             std::cout << "batch size set to: " << s->batch_size << "\n";
             std::cout << "score threshold set to: " << s->score_thr << "\n";
             std::cout << "device id set to: " << s->device_id << "\n";

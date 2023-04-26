@@ -1,17 +1,17 @@
-#ifndef _YOLOV8_DETECT_CPP_HPP_
-#define _YOLOV8_DETECT_CPP_HPP_
+#ifndef _YOLOV8_SEG_CUDA_HPP_
+#define _YOLOV8_SEG_CUDA_HPP_
 #include <memory>
 #include "backend/tensorrt/trt_infer.hpp"
 #include "common/model_info.hpp"
 #include "common/utils.hpp"
 #include "common/cv_cpp_utils.hpp"
 #include "common/memory.hpp"
-#include "pre_process/pre_process.hpp"
-#include "post_process/post_process.hpp"
+#include "pre_process/pre_process.cuh"
+#include "post_process/post_process.cuh"
 
 namespace tensorrt_infer
 {
-    namespace yolov8_cpp
+    namespace yolov8_cuda
     {
         using namespace ai::modelInfo;
         using namespace ai::utils;
@@ -20,41 +20,50 @@ namespace tensorrt_infer
         using namespace ai::preprocess;
         using namespace ai::postprocess;
 
-        class YOLOv8Detect
+        class YOLOv8Seg
         {
         public:
-            YOLOv8Detect() = default;
-            ~YOLOv8Detect();
+            YOLOv8Seg() = default;
+            ~YOLOv8Seg();
             void initParameters(const std::string &engine_file, float score_thr = 0.5f,
                                 float nms_thr = 0.45f); // 初始化参数
             void adjust_memory(int batch_size);         // 由于batch size是动态的，所以需要对gpu/cpu内存进行动态的申请
 
             // forward
-            BoxArray forward(const Image &image);
-            BatchBoxArray forwards(const std::vector<Image> &images);
+            SegBoxArray forward(const Image &image);
+            BatchSegBoxArray forwards(const std::vector<Image> &images);
 
             // 模型前后处理
-            std::tuple<float, int, int> preprocess_cpu(int ibatch, const Image &image);
-            void postprocess_cpu(int ibatch);
-            BatchBoxArray parser_box(int num_image);
+            void preprocess_gpu(int ibatch, const Image &image,
+                                shared_ptr<Memory<unsigned char>> preprocess_buffer, AffineMatrix &affine,
+                                cudaStream_t stream_);
+            void postprocess_gpu(int ibatch, cudaStream_t stream_);
+            BatchSegBoxArray parser_box(int num_image);
 
         private:
             std::shared_ptr<ai::backend::Infer> model_;
             std::shared_ptr<ModelInfo> model_info = nullptr;
 
+            // seg的scale
+            float scale_to_predict_x = 0.0f;
+            float scale_to_predict_y = 0.0f;
+
             // 仿射矩阵的声明
+            std::vector<AffineMatrix> affine_matrixs;
             const uint8_t const_value = 114; // 图片resize补边时的值
 
-            // 收集每张图片的缩放尺寸
-            std::vector<std::tuple<float, int, int>> pad_scale_vec;
-
             // 使用自定义的Memory类用来申请gpu/cpu内存
-            Memory<float> input_buffer_, bbox_predict_, output_boxarray_;
+            std::vector<std::shared_ptr<Memory<unsigned char>>> preprocess_buffers_;
+            Memory<float> input_buffer_, bbox_predict_, output_boxarray_, segment_predict_;
+            Memory<unsigned char> box_segment_predict_;
 
             // 使用cuda流进行操作
             cudaStream_t cu_stream;
+
+            // time
+            Timer timer;
         };
     }
 }
 
-#endif // _YOLOV8_DETECT_CPP_HPP_
+#endif // _YOLOV8_SEG_CUDA_HPP_

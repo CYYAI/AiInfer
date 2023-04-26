@@ -62,6 +62,24 @@ namespace ai
             d2i[5] = b2;
         }
 
+        InstanceSegmentMap::InstanceSegmentMap(int width, int height)
+        {
+            this->width = width;
+            this->height = height;
+            checkRuntime(cudaMallocHost(&this->data, width * height));
+        }
+
+        InstanceSegmentMap::~InstanceSegmentMap()
+        {
+            if (this->data)
+            {
+                checkRuntime(cudaFreeHost(this->data));
+                this->data = nullptr;
+            }
+            this->width = 0;
+            this->height = 0;
+        }
+
         void draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels)
         {
             for (int ib = 0; ib < (int)batched_result.size(); ++ib)
@@ -111,6 +129,55 @@ namespace ai
             {
                 std::string save_path = path_join("%s/Infer_one.jpg", save_dir.c_str());
                 cv::imwrite(save_path, image);
+            }
+        }
+
+        void draw_batch_segment(std::vector<cv::Mat> &images, BatchSegBoxArray &batched_result, const std::string &save_dir,
+                                const std::vector<std::string> &classlabels, int img_mask_wh, int network_input_wh)
+        {
+            for (int ib = 0; ib < (int)batched_result.size(); ++ib)
+            {
+                auto &objs = batched_result[ib];
+                auto &image = images[ib];
+                cv::Mat img_mask = cv::Mat::zeros(img_mask_wh, img_mask_wh, CV_8UC3);
+
+                float scale_img_mask_x = (img_mask_wh * 1.0) / image.cols;
+                float scale_img_mask_y = (img_mask_wh * 1.0) / image.rows;
+                float scale_img_mask_xy = std::min(scale_img_mask_x, scale_img_mask_y);
+
+                int padw = 0, padh = 0;
+                if (image.cols > image.rows)
+                    padh = (int)(image.cols - image.rows) / 2;
+                else
+                    padw = (int)(image.rows - image.cols) / 2;
+
+                for (auto &obj : objs)
+                {
+                    uint8_t b, g, r;
+                    tie(b, g, r) = random_color(obj.class_label);
+                    cv::rectangle(image, cv::Point(obj.left, obj.top), cv::Point(obj.right, obj.bottom),
+                                  cv::Scalar(b, g, r), 2);
+                    auto name = classlabels[obj.class_label];
+                    auto caption = cv::format("%s %.2f", name.c_str(), obj.confidence);
+                    int width = cv::getTextSize(caption, 0, 1, 2, nullptr).width + 10;
+                    cv::rectangle(image, cv::Point(obj.left - 3, obj.top - 33),
+                                  cv::Point(obj.left + width, obj.top), cv::Scalar(b, g, r), -1);
+                    cv::putText(image, caption, cv::Point(obj.left, obj.top - 5), 0, 1, cv::Scalar::all(0), 2, 16);
+                    // seg
+                    cv::Mat seg_image(obj.seg->height, obj.seg->width, CV_8UC3);
+                    cv::Mat seg_image_mask(obj.seg->height, obj.seg->width, CV_8UC1, obj.seg->data);
+                    cv::cvtColor(seg_image_mask, seg_image, cv::COLOR_GRAY2BGR);
+                    seg_image = seg_image.mul(cv::Scalar(b, g, r));
+                    cv::Rect img_mask_rect = cv::Rect((obj.left + padw) * scale_img_mask_xy, (obj.top + padh) * scale_img_mask_xy, obj.seg->width, obj.seg->height);
+                    cv::add(img_mask(img_mask_rect), seg_image, img_mask(img_mask_rect));
+                }
+                cv::resize(img_mask, img_mask, cv::Size(), 1 / scale_img_mask_xy, 1 / scale_img_mask_xy);
+                if (mkdirs(save_dir))
+                {
+                    std::string save_path = path_join("%s/Infer_%d.jpg", save_dir.c_str(), ib);
+                    // cv::imwrite("seg.png", img_mask(cv::Rect(padw, padh, image.cols, image.rows)));
+                    cv::imwrite(save_path, 0.8 * image + 0.2 * img_mask(cv::Rect(padw, padh, image.cols, image.rows)));
+                }
             }
         }
     }

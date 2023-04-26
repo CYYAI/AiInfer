@@ -137,30 +137,29 @@ namespace ai
             if (position >= num_bboxes)
                 return;
 
-            // yolov8和其他yolo系列的box不一样，是：left,top,right,bottom,class0,class1,...,classn
-            // 然后在class0,class1,...,classn中取最大的座位score和label，去除了objectness，且是列排序，所以，需要对前面的解析代码稍微改变
-            // float *pitem = predict + output_cdim * position;
-            float max_confidence = *(predict + 4 * num_bboxes + position);
+            float *pitem = predict + output_cdim * position;
+            float *class_confidence = pitem + 4;
+            float confidence = *class_confidence++;
             int label = 0;
-            for (int i = 1; i < num_classes; ++i)
+            for (int i = 1; i < num_classes; ++i, ++class_confidence)
             {
-                if (*(predict + (4 + i) * num_bboxes + position) > max_confidence)
+                if (*class_confidence > confidence)
                 {
-                    max_confidence = *(predict + (4 + i) * num_bboxes + position);
+                    confidence = *class_confidence;
                     label = i;
                 }
             }
-            if (max_confidence < confidence_threshold)
+            if (confidence < confidence_threshold)
                 return;
 
             int index = atomicAdd(parray, 1);
             if (index >= MAX_IMAGE_BOXES)
                 return;
 
-            float cx = *(predict + 0 * num_bboxes + position);
-            float cy = *(predict + 1 * num_bboxes + position);
-            float width = *(predict + 2 * num_bboxes + position);
-            float height = *(predict + 3 * num_bboxes + position);
+            float cx = *pitem++;
+            float cy = *pitem++;
+            float width = *pitem++;
+            float height = *pitem++;
             float left = cx - width * 0.5f;
             float top = cy - height * 0.5f;
             float right = cx + width * 0.5f;
@@ -173,9 +172,47 @@ namespace ai
             *pout_item++ = top;
             *pout_item++ = right;
             *pout_item++ = bottom;
-            *pout_item++ = max_confidence;
+            *pout_item++ = confidence;
             *pout_item++ = label;
             *pout_item++ = 1; // 1 = keep, 0 = ignore
+            if (NUM_BOX_ELEMENT == 8)
+                *pout_item++ = position;
+        }
+
+        static __global__ void decode_single_mask_kernel(int left, int top, float *mask_weights,
+                                                         float *mask_predict, int mask_width,
+                                                         int mask_height, unsigned char *mask_out,
+                                                         int mask_dim, int out_width, int out_height)
+        {
+            // mask_predict to mask_out
+            // mask_weights @ mask_predict
+            int dx = blockDim.x * blockIdx.x + threadIdx.x;
+            int dy = blockDim.y * blockIdx.y + threadIdx.y;
+            if (dx >= out_width || dy >= out_height)
+                return;
+
+            int sx = left + dx;
+            int sy = top + dy;
+            if (sx < 0 || sx >= mask_width || sy < 0 || sy >= mask_height)
+            {
+                mask_out[dy * out_width + dx] = 0;
+                return;
+            }
+
+            float cumprod = 0;
+            for (int ic = 0; ic < mask_dim; ++ic)
+            {
+                float cval = mask_predict[(ic * mask_height + sy) * mask_width + sx];
+                float wval = mask_weights[ic];
+                cumprod += cval * wval;
+            }
+
+            float alpha = 1.0f / (1.0f + exp(-cumprod));
+            // mask_out[dy * out_width + dx] = alpha;
+            if (alpha > 0.5)
+                mask_out[dy * out_width + dx] = 1;
+            else
+                mask_out[dy * out_width + dx] = 0;
         }
 
         static __global__ void decode_kernel_rtdetr(float *predict, int num_bboxes, int num_classes,
@@ -258,13 +295,22 @@ namespace ai
         {
             auto grid = CUDATools::grid_dims(num_bboxes);
             auto block = CUDATools::block_dims(num_bboxes);
-            // yolov3/v5/v7/yolox等模型的输出格式是[batch,num_boxes,output_cdim],这样，每个框的所有值是连续排列的[行排序]，方便使用
-            // 但是yolov8的输出是[batch,output_cdim,num_boxes],这就超难受了，每个框的所以值都不连续，冲突是最大的[列排序]，解决方案:
-            // 1. 从onnx的导出上解决，直接将其维度[batch,6,8400]-->[batch,8400,6],这样再生成engine就可以了，这个速度较快
-            // 2. 从解析结果层面解决，但这会造成kernel函数执行线程存储体的冲突且冲突是最大的，所以这个方法速度稍慢，本节用这个
             checkCudaKernel(decode_kernel_v8_trans<<<grid, block, 0, stream>>>(
                 predict, num_bboxes, num_classes, output_cdim, confidence_threshold, invert_affine_matrix,
                 parray, MAX_IMAGE_BOXES, NUM_BOX_ELEMENT));
+        }
+
+        void decode_single_mask(float left, float top, float *mask_weights, float *mask_predict,
+                                int mask_width, int mask_height, unsigned char *mask_out,
+                                int mask_dim, int out_width, int out_height, cudaStream_t stream)
+        {
+            // mask_weights is mask_dim(32 element) gpu pointer
+            dim3 grid((out_width + 31) / 32, (out_height + 31) / 32);
+            dim3 block(32, 32);
+
+            checkCudaKernel(decode_single_mask_kernel<<<grid, block, 0, stream>>>(
+                left, top, mask_weights, mask_predict, mask_width, mask_height, mask_out, mask_dim, out_width,
+                out_height));
         }
 
         void decode_detect_rtdetr_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,

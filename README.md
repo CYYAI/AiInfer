@@ -3,11 +3,13 @@
 
 ## 新增项目消息:
 - 🔥增加了RT-DETR的tensorrt推理，只包含cuda版本，因为cpp版仅用于测速，实际部署又不用~
-    - [cuda版本](https://github.com/AiQuantPro/AiInfer/tree/main/application/rtdetr_det_app/rtdetr_cuda)
-    - [导出engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
+    - [导出RT-DETR engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
+    - [cuda版本](application/rtdetr_det_app/rtdetr_cuda)
 - 🔥增加了yolov8的tensorrt推理，包括cpp版本和cuda版本!
-    - [cpp版本](https://github.com/AiQuantPro/AiInfer/tree/main/application/yolov8_det_app/yolov8_cpp)
-    - [cuda版本](https://github.com/AiQuantPro/AiInfer/tree/main/application/yolov8_det_app/yolov8_cuda)
+    - [导出YOLOv8-det/seg/pose engine模型教程](application/yolov8_app/README.md)
+    - [yolov8检测cuda版本](application/yolov8_app/yolov8_det_cuda)
+    - [yolov8分割cuda版本](application/yolov8_app/yolov8_seg_cuda)
+    - [yolov8姿态估计cuda版本](coming soon)
 ## 其他backend推理代码
 - [ Openvino ] coming soon
 - [ NCNN ] coming soon
@@ -19,6 +21,7 @@
 AiInfer
   |--application # 模型推理应用的实现，你自己的模型推理可以在该目录下实现
     |--yolov8_det_app # 举例：实现的一个yolov8检测
+    |--xxxx
   |--utils # 工具目录
     |--backend # 这里实现backend的推理类
     |--common # 里面放着一些常用的工具类
@@ -81,7 +84,7 @@ trtexec --onnx=xxx_dynamic.onnx \
 - 配置CMakeLists中的计算能力为你的显卡对应值
     - 例如`-gencode=arch=compute_75,code=sm_75`，例如RTX3090是86，则是：`-gencode=arch=compute_86,code=sm_86`
     - 计算能力根据型号参考这里查看：https://developer.nvidia.com/zh-cn/cuda-gpus#compute
-- 在CMakeLists.txt中配置你本机安装的tensorrt路径
+- 在CMakeLists.txt中配置你本机安装的tensorrt路径，和add_executable中你要使用的main.cpp文件
 - CMake:
     - `mkdir build && cd build`
     - `cmake ..`
@@ -95,7 +98,6 @@ cd workspaces
 ```
 - --model_path, -f: 要输如模型的路径，必选
 - --image_path, -i: 要输出的测试图片，必选
-- --device_type, -d: 前后处理事cpu还是cuda，可选，默认cuda
 - --batch_size, -b: 要使用的batch_size[>=1]，可选，默认=1
 - --score_thr, -s: 一般指后处理要筛选的得分阈值，可选，默认=0.5f
 - --device_id, -g: 多显卡的显卡id,可选，默认=0
@@ -105,8 +107,7 @@ cd workspaces
 - --help, -h: 使用-h来查看都有哪些命令
 ```bash
 # 然后运行按照你自己的要求运行即可，例如：
-./infer -f xxx.engine -i xxx.jpg -b 10 -c 10 -w 5 -d gpu -g 0 -o cuda_res # 使用cuda的前后处理，结果保存在cuda_res文件夹下
-./infer -f xxx.engine -i xxx.jpg -b 10 -c 10 -w 5 -d cpu -g 0 -o cpp_res # 使用cpp的前后处理，结果保存在cpp_res文件夹下
+./infer -f xxx.engine -i xxx.jpg -b 10 -c 10 -o cuda_res # 使用cuda的前后处理，结果保存在cuda_res文件夹下
 ```
 </details>
 

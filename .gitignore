@@ -3,7 +3,6 @@ build
 workspaces/result_output
 workspaces/cuda_res*
 workspaces/cpp_res
-workspaces/weights
+workspaces/weights/
 workspaces/infer
 workspaces/install
-workspaces/res

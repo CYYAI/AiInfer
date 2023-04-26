@@ -24,6 +24,11 @@ namespace ai
                                                  float confidence_threshold, float *invert_affine_matrix,
                                                  float *parray, int MAX_IMAGE_BOXES, int NUM_BOX_ELEMENT, cudaStream_t stream);
 
+        // yolov8 segment分支后处理
+        void decode_single_mask(float left, float top, float *mask_weights, float *mask_predict,
+                                int mask_width, int mask_height, unsigned char *mask_out,
+                                int mask_dim, int out_width, int out_height, cudaStream_t stream);
+
         // rtdetr后处理解析
         void decode_detect_rtdetr_kernel_invoker(float *predict, int num_bboxes, int num_classes, int output_cdim,
                                                  float confidence_threshold, int scale_expand, float *parray, int MAX_IMAGE_BOXES,
