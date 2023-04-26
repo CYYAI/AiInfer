@@ -3,13 +3,13 @@
 
 ## 新增项目消息:
 - 🔥增加了RT-DETR的tensorrt推理，只包含cuda版本，因为cpp版仅用于测速，实际部署又不用~
-    - [导出RT-DETR engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
+    - [导出RT-DETR-Engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
     - [cuda版本](application/rtdetr_det_app/rtdetr_cuda)
 - 🔥增加了yolov8的tensorrt推理，包括cpp版本和cuda版本!
-    - [导出YOLOv8-det/seg/pose engine模型教程](application/yolov8_app/README.md)
-    - [yolov8检测cuda版本](application/yolov8_app/yolov8_det_cuda)
-    - [yolov8分割cuda版本](application/yolov8_app/yolov8_seg_cuda)
-    - [yolov8姿态估计cuda版本](coming soon)
+    - [导出YOLOv8-Engine模型教程](application/yolov8_app/README.md)
+    - [yolov8-detection cuda版本](application/yolov8_app/yolov8_det_cuda)
+    - [yolov8-segment cuda版本](application/yolov8_app/yolov8_seg_cuda)
+    - [yolov8-pose cuda版本](coming soon)
 ## 其他backend推理代码
 - [ Openvino ] coming soon
 - [ NCNN ] coming soon
