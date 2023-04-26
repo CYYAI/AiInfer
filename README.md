@@ -2,10 +2,10 @@
 这是一个c++版的AI推理库，目前只支持tensorrt模型的推理，后续计划支持Openvino、NCNN、MNN等框架的c++推理。前后处理提供两个版本，c++版和cuda版，建议使用cuda版。
 
 ## 新增项目消息:
-- 🔥增加了RT-DETR的tensorrt推理，只包含cuda版本，因为cpp版仅用于测速，实际部署又不用~
+- 🔥增加了RT-DETR的目标检测tensorrt推理
     - [导出RT-DETR-Engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
     - [cuda版本](application/rtdetr_det_app/rtdetr_cuda)
-- 🔥增加了yolov8的tensorrt推理，包括cpp版本和cuda版本!
+- 🔥增加了yolov8各个任务的tensorrt推理，包含检测、分割、姿态估计
     - [导出YOLOv8-Engine模型教程](application/yolov8_app/README.md)
     - [yolov8-detection cuda版本](application/yolov8_app/yolov8_det_cuda)
     - [yolov8-segment cuda版本](application/yolov8_app/yolov8_seg_cuda)
