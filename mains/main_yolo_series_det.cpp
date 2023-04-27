@@ -59,15 +59,9 @@ int main(int argc, char *argv[])
     }
     ai::arg_parsing::printArgs(&s);
 
-    ///////////////////////////
-    s.model_path = "weights/yolov7_dynamic_fp16.engine";
-    s.image_path = "res/bus.jpg";
-    s.output_dir = "cuda_res";
-    ///////////////////////////
-
     CHECK(cudaSetDevice(s.device_id)); // 设置你用哪块gpu
     // 第二个参数只支持：yolov5,yolov6,yolox,yolov7
     // 由于只有这一个系列，所以该参数就不放到arg_parse里面了，根据你的需求选择或拆开即可
-    trt_cuda_inference(&s, "yolov7"); // tensorrt的gpu版本推理：模型前处理和后处理都是使用cuda实现
+    trt_cuda_inference(&s, "yolov5");
     return RETURN_SUCCESS;
 }

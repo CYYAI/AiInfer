@@ -14,7 +14,7 @@ set(CUDA_NVCC_FLAGS "-gencode=arch=compute_86,code=sm_86;-G;-g;-O0;-w")
 find_package(CUDA REQUIRED) # 这个默认你本机已经安装
 find_package(OpenCV REQUIRED) # 如果你没安装，sudo apt-get install libopencv-dev
 
-# 4. 设置tensorrt的主目录
+# 4. 设置tensorrt的主目录,支持tensorrt7.xx和tensorrt8.xx
 # set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-7.2.3.4") # 设置tensorrt7.xx根目录，改为你自己的即可
 set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-8.6.0.12") # 设置tensorrt8.xx根目录，改为你自己的即可
 

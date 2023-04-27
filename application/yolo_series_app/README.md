@@ -65,3 +65,4 @@ trtexec --onnx=xxx_det.onnx \
   - [ppq不会使用的看yolov6的量化教程:](https://github.com/meituan/YOLOv6/tree/main/tools/quantization/ppq)
 
 **生成Engine后直接编译运行即可，上面的代码都是经过测试的，如果出错请排查你的onnx或联系我解决**
+- 程序入口：mains/main_yolo_series_det.cpp
