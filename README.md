@@ -12,7 +12,7 @@
     - [yolov8-pose cuda版本](application/yolov8_app/yolov8_pose_cuda)
 - 🔥增加yolo系列通用的检测代码，包含yolov5、yolox、yolov6、yolov7
     - [导出各yolo系列的Engine模型](application/yolo_series_app/README.md)
-    - [上述yolo系列通用det-cuda代码](application/yolo_series_app)
+    - [上述yolo系列通用det-cuda代码](application/yolo_series_app/yolo_det_cuda)
     
 ## 其他backend推理代码
 - [ Openvino ] coming soon
