@@ -4,7 +4,7 @@
 ## 新增项目消息:
 - 🔥增加了RT-DETR的目标检测tensorrt推理
     - [导出RT-DETR-Engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
-    - [cuda版本](application/rtdetr_det_app/rtdetr_cuda)
+    - [RT-DETR检测cuda版本](application/rtdetr_det_app/rtdetr_cuda)
 - 🔥增加了yolov8各个任务的tensorrt推理，包含检测、分割、姿态估计
     - [导出YOLOv8-Engine模型教程](application/yolov8_app/README.md)
     - [yolov8-detection cuda版本](application/yolov8_app/yolov8_det_cuda)
