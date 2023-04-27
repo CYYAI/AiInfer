@@ -9,7 +9,7 @@
     - [导出YOLOv8-Engine模型教程](application/yolov8_app/README.md)
     - [yolov8-detection cuda版本](application/yolov8_app/yolov8_det_cuda)
     - [yolov8-segment cuda版本](application/yolov8_app/yolov8_seg_cuda)
-    - [yolov8-pose cuda版本](coming soon)
+    - [yolov8-pose cuda版本](application/yolov8_app/yolov8_pose_cuda)
 ## 其他backend推理代码
 - [ Openvino ] coming soon
 - [ NCNN ] coming soon
@@ -31,8 +31,8 @@ AiInfer
       |--memory.hpp # 有关cpu、gpu内存申请和释放的工具类
       |--model_info.hpp # 有关模型的前后处理的常用参数定义，例如均值方差、nms阈值等
       |--utils.hpp # cpp中常用到的工具函数，计时、mkdir等
-    |--post_process # 后处理实现目录，包括cpp和cuda后处理加速
-    |--pre_process # 前处理实现目录，包括cpp和cuda前处理加速
+    |--post_process # 后处理实现目录，cuda后处理加速,如果你有自定义的后处理也可以写在这里
+    |--pre_process # 前处理实现目录，cuda前处理加速,如果你有自定义的前处理也可以写在这里
   |--workspaces # 工作目录，里面可以放一些测试图片/视频、模型，然后在main.cpp中直接使用相对路径
   |--mains # 这里面是main.cpp合集，这里采用每个app单独对应一个main文件，便于理解，写一起太冗余
 ```
@@ -43,6 +43,7 @@ AiInfer
 
 - linux推荐使用VSCode,windows推荐使用visual studio 2019
 - 安装显卡驱动、cuda、cudnn、opencv、tensorrt [安装教程](https://zhuanlan.zhihu.com/p/624170244)
+
 </details>
 
 <details>

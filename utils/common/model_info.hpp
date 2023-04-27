@@ -35,6 +35,9 @@ namespace ai
             std::vector<int> seg_head_dims_;
             size_t seg_head_dims_output_numel_{0}; // 模型输出的大小，无需配置
 
+            // pose分支
+            int pose_num_ = 0;
+
             // 模型输出结果解析时的一些参数设置,最好设置为const类型，以免改变
             int MAX_IMAGE_BOXES = 1024;
             int NUM_BOX_ELEMENT = 7;               // left, top, right, bottom, confidence, class,keepflag.一般是固定值，常不修改

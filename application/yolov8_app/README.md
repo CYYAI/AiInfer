@@ -10,6 +10,12 @@ if dynamic:
         dynamic['output1'] = {0: 'batch', 2: 'mask_height', 3: 'mask_width'}
     elif isinstance(self.model, DetectionModel):
         dynamic['output0'] = {0: 'batch'}
+
+# 补充，注意导出yolov-pose任务的时候有些小问题，作者对pose分支的score进行sigmoid直接使用的是tensor.simoid_()
+  # 这种replace方法，onnx导出时并不把这种当做sigmoid算子导出，所以pose score分支是有问题的，解决：
+  # ultralytics/nn/modules.py Pose类的kpts_decode方法，
+  y[:, 2::3].sigmoid_() # 修改成下面这种形式即可
+  y[:, 2::3] = y[:, 2::3].sigmoid()
 ```
 - 然后使用下面的命令对yolov8的各任务模型进行导出即可，注意，默认的imgsz是640x640,这个根据你实际情况更改
 ```bash
@@ -25,7 +31,7 @@ yolo export \
 - yolov8检测分支导出onnx shape=[-1,box_num+cls_num,8400]，框维度在最后这就带来一个框内存不连续的问题，解决：
 ```bash
 # 前言：yolov3/4/5/x/6/7人家都是[-1,8400,box_num+cls_num],你yolov8咋恁特立独行呢，干他，必须干他
-# 使用assets/yolov8_onnx_trans.py直接转换最后一层layer的维度，适用于detect和segment，pose不需要
+# 使用assets/yolov8_onnx_trans.py直接转换最后一层layer的维度[detect,segment,pose都要转换]，就是将8400这个维度放到前面
 ```
 ### yolov8的onnx生成engine文件
 - fp16量化生成的命令如下，这个精度损失不大，可以直接使用trtexec完成
@@ -43,3 +49,5 @@ trtexec --onnx=xxx_det_seg_pose_trans.onnx \
   - [ppq不会使用的看yolov6的量化教程:](https://github.com/meituan/YOLOv6/tree/main/tools/quantization/ppq)
 
 **然后将生成的engine模型送入到该项目中进行推理即可**
+### 下面展示一下使用该项目的推理结果
+![yolov8](../../assets/yolov8_det_seg_pose_res.png)

@@ -180,5 +180,53 @@ namespace ai
                 }
             }
         }
+
+        void draw_batch_pose(std::vector<cv::Mat> &images, BatchPoseBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels)
+        {
+            for (int ib = 0; ib < (int)batched_result.size(); ++ib)
+            {
+                auto &objs = batched_result[ib];
+                auto &image = images[ib];
+                for (auto &obj : objs)
+                {
+                    uint8_t b, g, r;
+                    tie(b, g, r) = random_color(obj.class_label);
+                    cv::rectangle(image, cv::Point(obj.left, obj.top), cv::Point(obj.right, obj.bottom),
+                                  cv::Scalar(b, g, r), 2);
+                    auto name = classlabels[obj.class_label];
+                    auto caption = cv::format("%s %.2f", name.c_str(), obj.confidence);
+                    int width = cv::getTextSize(caption, 0, 1, 2, nullptr).width + 10;
+                    cv::rectangle(image, cv::Point(obj.left - 3, obj.top - 33),
+                                  cv::Point(obj.left + width, obj.top), cv::Scalar(b, g, r), -1);
+                    cv::putText(image, caption, cv::Point(obj.left, obj.top - 5), 0, 1, cv::Scalar::all(0), 2,
+                                16);
+
+                    // draw point
+                    for (int i = 0; i < obj.pose->pose_data.size(); i++)
+                    {
+                        float pose_x = obj.pose->pose_data[i][0];
+                        float pose_y = obj.pose->pose_data[i][1];
+                        float pose_score = obj.pose->pose_data[i][2];
+                        if (pose_score >= 0.5)
+                            cv::circle(image, cv::Point(pose_x, pose_y), 4, cv::Scalar(b, g, r), -1, 16);
+                    }
+
+                    // draw line
+                    for (auto &pair : obj.pose->skeleton)
+                    {
+                        if (obj.pose->pose_data[pair[0]][0] > 0. && obj.pose->pose_data[pair[0]][1] > 0. && obj.pose->pose_data[pair[0]][2] >= 0.5 &&
+                            obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][2] >= 0.5)
+                            cv::line(image, cv::Point(obj.pose->pose_data[pair[0]][0], obj.pose->pose_data[pair[0]][1]),
+                                     cv::Point(obj.pose->pose_data[pair[1]][0], obj.pose->pose_data[pair[1]][1]),
+                                     cv::Scalar(r, g, b), 2);
+                    }
+                }
+                if (mkdirs(save_dir))
+                {
+                    std::string save_path = path_join("%s/Infer_%d.jpg", save_dir.c_str(), ib);
+                    cv::imwrite(save_path, image);
+                }
+            }
+        }
     }
 }

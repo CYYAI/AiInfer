@@ -3,6 +3,7 @@
 
 #include <tuple>
 #include <string.h>
+#include <vector>
 #include <opencv2/opencv.hpp>
 #include "utils.hpp"
 
@@ -118,6 +119,34 @@ namespace ai
         typedef std::vector<SegBox> SegBoxArray;
         typedef std::vector<SegBoxArray> BatchSegBoxArray;
 
+        struct InstancePose
+        {
+            std::vector<std::vector<float>> pose_data; // 存储骨骼点
+            // 存储骨骼连接顺序
+            std::vector<std::vector<int>> skeleton{{15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8}, {7, 9}, {8, 10}, {0, 1}, {0, 2}, {1, 3}, {2, 4}};
+            InstancePose() = default;
+            virtual ~InstancePose() = default;
+        };
+
+        struct PoseBox
+        {
+            float left, top, right, bottom, confidence;
+            int class_label;
+            std::shared_ptr<InstancePose> pose; // valid only in segment task
+
+            PoseBox() = default;
+            PoseBox(float left, float top, float right, float bottom, float confidence, int class_label)
+                : left(left),
+                  top(top),
+                  right(right),
+                  bottom(bottom),
+                  confidence(confidence),
+                  class_label(class_label) {}
+        };
+
+        typedef std::vector<PoseBox> PoseBoxArray;
+        typedef std::vector<PoseBoxArray> BatchPoseBoxArray;
+
         // draw image
         void draw_one_image_rectangle(cv::Mat &image, BoxArray &result, const std::string &save_dir, const std::vector<std::string> &classlabels);
         void draw_batch_rectangle(std::vector<cv::Mat> &images, BatchBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels);
@@ -125,6 +154,9 @@ namespace ai
         // draw seg image
         void draw_batch_segment(std::vector<cv::Mat> &images, BatchSegBoxArray &batched_result, const std::string &save_dir,
                                 const std::vector<std::string> &classlabels, int img_mask_wh = 160, int network_input_wh = 640);
+
+        // draw pose img
+        void draw_batch_pose(std::vector<cv::Mat> &images, BatchPoseBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels);
     }
 }
 
