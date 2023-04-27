@@ -174,9 +174,11 @@ namespace ai
                 cv::resize(img_mask, img_mask, cv::Size(), 1 / scale_img_mask_xy, 1 / scale_img_mask_xy);
                 if (mkdirs(save_dir))
                 {
+                    cv::Mat img_seg_mask = img_mask(cv::Rect(padw, padh, image.cols, image.rows));
                     std::string save_path = path_join("%s/Infer_%d.jpg", save_dir.c_str(), ib);
-                    // cv::imwrite("seg.png", img_mask(cv::Rect(padw, padh, image.cols, image.rows)));
-                    cv::imwrite(save_path, 0.8 * image + 0.2 * img_mask(cv::Rect(padw, padh, image.cols, image.rows)));
+                    std::string save_seg_path = path_join("%s/Infer_%d_seg.jpg", save_dir.c_str(), ib);
+                    cv::imwrite(save_seg_path, img_seg_mask);
+                    cv::imwrite(save_path, 0.8 * image + 0.2 * img_seg_mask);
                 }
             }
         }

@@ -49,6 +49,7 @@ AiInfer
 <details>
 <summary>2. onnx转trt【fp16+int8】</summary>
 
+- 建议先从一个检测的例子入手，熟悉项目架构，例如：application/yolov8_app/yolov8_det_cuda
 - onnx的导出保证是动态batch，这里举例pytorch模型的导出
 ```python
 torch.onnx._export(
