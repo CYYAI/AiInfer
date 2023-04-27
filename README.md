@@ -10,6 +10,10 @@
     - [yolov8-detection cuda版本](application/yolov8_app/yolov8_det_cuda)
     - [yolov8-segment cuda版本](application/yolov8_app/yolov8_seg_cuda)
     - [yolov8-pose cuda版本](application/yolov8_app/yolov8_pose_cuda)
+- 🔥增加yolo系列通用的检测代码，包含yolov5、yolox、yolov6、yolov7
+    - [导出各yolo系列的Engine模型](application/yolo_series_app/README.md)
+    - [上述yolo系列通用det-cuda代码](application/yolo_series_app)
+    
 ## 其他backend推理代码
 - [ Openvino ] coming soon
 - [ NCNN ] coming soon
@@ -62,6 +66,12 @@ torch.onnx._export(
                       'output': {0: 'batch'}},
         opset_version=args.opset, # 一般11或12更加适用于各种芯片或板子
     )
+```
+- 将onnx精简[可选]
+```bash
+# 注意，如果你已经在代码中运行过onnxsim了，那就略过这步
+pip install onnxsim # 安装onnxsim库，可以直接将复杂的onnx转为简单的onnx模型，且不改变其推理精度
+onnxsim input_onnx_model output_onnx_model # 通过该命令行你会得到一个去除冗余算子的onnx模型
 ```
 - onnx的fp16量化，转tensorrt，建议动态batch
 ```bash

@@ -48,6 +48,6 @@ trtexec --onnx=xxx_det_seg_pose_trans.onnx \
   - [商汤的ppq的int8量化工具,支持tensorrt|openvino|mnn|ncnn|...](https://github.com/openppl-public/ppq)
   - [ppq不会使用的看yolov6的量化教程:](https://github.com/meituan/YOLOv6/tree/main/tools/quantization/ppq)
 
-**然后将生成的engine模型送入到该项目中进行推理即可**
+**生成Engine后直接编译运行即可，上面的代码都是经过测试的，如果出错请排查你的onnx或联系我解决**
 ### 下面展示一下使用该项目的推理结果
 ![yolov8](../../assets/yolov8_det_seg_pose_res.png)

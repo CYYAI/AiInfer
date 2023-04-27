@@ -56,8 +56,9 @@ file(GLOB_RECURSE cpp_cuda_srcs
 )
 cuda_add_library(utils_cu_cpp SHARED ${cpp_cuda_srcs})
 
+add_executable(infer mains/main_yolo_series_det.cpp)
 # add_executable(infer mains/main_yolov8_det.cpp)
-add_executable(infer mains/main_yolov8_seg.cpp)
+# add_executable(infer mains/main_yolov8_seg.cpp)
 # add_executable(infer mains/main_yolov8_pose.cpp)
 # add_executable(infer mains/main_rtdetr.cpp)
 # 8. 链接要所有要用到的so库
