@@ -11,7 +11,7 @@
     - [yolov8-segment cuda版本](application/yolov8_app/yolov8_seg_cuda)
     - [yolov8-pose cuda版本](application/yolov8_app/yolov8_pose_cuda)
 - 🔥增加yolo系列通用的检测代码，包含yolov5、yolox、yolov6、yolov7
-    - [导出各yolo系列的Engine模型](application/yolo_series_app/README.md)
+    - [导出各yolo系列Engine模型的教程](application/yolo_series_app/README.md)
     - [上述yolo系列通用det-cuda代码](application/yolo_series_app)
     
 ## 其他backend推理代码
@@ -46,7 +46,7 @@ AiInfer
 <summary>1. Linux & Windows下环境配置</summary>
 
 - linux推荐使用VSCode,windows推荐使用visual studio 2019
-- 安装显卡驱动、cuda、cudnn、opencv、tensorrt [安装教程](https://zhuanlan.zhihu.com/p/624170244)
+- 安装显卡驱动、cuda、cudnn、opencv、tensorrt-->[安装教程](https://zhuanlan.zhihu.com/p/624170244)
 
 </details>
 
@@ -54,7 +54,7 @@ AiInfer
 <summary>2. onnx转trt【fp16+int8】</summary>
 
 - 建议先从一个检测的例子入手，熟悉项目架构，例如：application/yolov8_app/yolov8_det_cuda
-- onnx的导出保证是动态batch，这里举例pytorch模型的导出
+- onnx的导出建议是动态batch，这里举例pytorch模型的导出，如果你需要动态宽高，该项目也支持~
 ```python
 torch.onnx._export(
         model,
