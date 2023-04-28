@@ -5,13 +5,16 @@
 - 🔥增加了RT-DETR的目标检测tensorrt推理
     - [导出RT-DETR-Engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
     - [RT-DETR检测cuda版本](application/rtdetr_det_app/rtdetr_cuda)
-- 🔥增加了多目标追踪ByteTrack的实现，比sort精度高且速度差不多，强烈推荐
+
+- 🔥增加了多目标追踪ByteTrack的实现(速度快,精度高)，强烈推荐
     - [ByteTrack的使用教程](application/det_track_app/README.md)
+
 - 🔥增加了yolov8各个任务的tensorrt推理，包含检测、分割、姿态估计
     - [导出YOLOv8-Engine模型教程](application/yolov8_app/README.md)
     - [yolov8-detection cuda版本](application/yolov8_app/yolov8_det_cuda)
     - [yolov8-segment cuda版本](application/yolov8_app/yolov8_seg_cuda)
     - [yolov8-pose cuda版本](application/yolov8_app/yolov8_pose_cuda)
+
 - 🔥增加yolo系列通用的检测代码，包含yolov5、yolox、yolov6、yolov7
     - [导出各yolo系列Engine模型的教程](application/yolo_series_app/README.md)
     - [上述yolo系列通用det-cuda代码](application/yolo_series_app)
@@ -39,6 +42,7 @@ AiInfer
       |--utils.hpp # cpp中常用到的工具函数，计时、mkdir等
     |--post_process # 后处理实现目录，cuda后处理加速,如果你有自定义的后处理也可以写在这里
     |--pre_process # 前处理实现目录，cuda前处理加速,如果你有自定义的前处理也可以写在这里
+    |--tracker # 这个是目标检测追踪库的实现，已解耦，不想用可直接删除
   |--workspaces # 工作目录，里面可以放一些测试图片/视频、模型，然后在main.cpp中直接使用相对路径
   |--mains # 这里面是main.cpp合集，这里采用每个app单独对应一个main文件，便于理解，写一起太冗余
 ```
