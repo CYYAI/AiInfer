@@ -6,7 +6,7 @@
     - [导出RT-DETR-Engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
     - [RT-DETR检测cuda版本](application/rtdetr_det_app/rtdetr_cuda)
 
-- 🔥增加了多目标追踪ByteTrack的实现(速度快,精度高)，强烈推荐
+- 🔥增加了多目标追踪**ByteTrack**的实现(速度快,精度高)，强烈推荐
     - [ByteTrack的使用教程](application/det_track_app/README.md)
 
 - 🔥增加了yolov8各个任务的tensorrt推理，包含检测、分割、姿态估计
