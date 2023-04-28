@@ -36,7 +36,7 @@ void det_track_infer(ai::arg_parsing::Settings *s)
     ai::ByteTrack::BYTETracker tracker(fps, 30); // 这里最长保留30帧
     cv::Mat img;
 
-    while (1)
+    while (true)
     {
         cap >> img;
         if (img.empty())

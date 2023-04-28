@@ -46,4 +46,4 @@ std::vector<ai::ByteTrack::STrack> output_stracks = tracker.update(res_boxes);//
 ```
 **追踪效果如下所示：精度和速度都很不错**
 
-![dance](../../assets/dance_res.mp4)
+![dance](../../assets/dance_track.png)
