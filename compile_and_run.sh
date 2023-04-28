@@ -1,5 +1,5 @@
-rm -rf build && mkdir -p build && cd build && cmake ..  && make -j48 && cd ..
-# mkdir -p build && cd build && cmake ..  && make -j48 && cd ..
+# rm -rf build && mkdir -p build && cd build && cmake ..  && make -j48 && cd ..
+mkdir -p build && cd build && cmake ..  && make -j48 && cd ..
 cd workspaces
 # ./infer -f weights/yolov5_det_dynamic_int8.engine -i res/dog.jpg -b 16 -c 10 -o cuda_res
 # ./infer -f weights/yolov6_det_dynamic_int8.engine -i res/dog.jpg -b 16 -c 10 -o cuda_res

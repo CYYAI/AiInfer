@@ -13,6 +13,7 @@ set(CUDA_NVCC_FLAGS "-gencode=arch=compute_86,code=sm_86;-G;-g;-O0;-w")
 # 3. 寻找cuda和opencv库
 find_package(CUDA REQUIRED) # 这个默认你本机已经安装
 find_package(OpenCV REQUIRED) # 如果你没安装，sudo apt-get install libopencv-dev
+find_package(Eigen3 REQUIRED) # 在使用追踪项目的时候要用到，其他项目直接注释掉即可
 
 # 4. 设置tensorrt的主目录,支持tensorrt7.xx和tensorrt8.xx
 # set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-7.2.3.4") # 设置tensorrt7.xx根目录，改为你自己的即可
@@ -22,6 +23,7 @@ set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-8.6.0.12") # 设置tensorrt8.x
 include_directories(
     ${OpenCV_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS} # 追踪要用到
 
     # tensorrt
     ${TensorRT_ROOT}/include
@@ -56,10 +58,11 @@ file(GLOB_RECURSE cpp_cuda_srcs
 )
 cuda_add_library(utils_cu_cpp SHARED ${cpp_cuda_srcs})
 
-add_executable(infer mains/main_yolo_series_det.cpp)
+# add_executable(infer mains/main_yolo_series_det.cpp)
 # add_executable(infer mains/main_yolov8_det.cpp)
 # add_executable(infer mains/main_yolov8_seg.cpp)
 # add_executable(infer mains/main_yolov8_pose.cpp)
+add_executable(infer mains/main_track_yolov8_det.cpp)
 # add_executable(infer mains/main_rtdetr.cpp)
 # 8. 链接要所有要用到的so库
 target_link_libraries(infer
