@@ -123,10 +123,10 @@ namespace tensorrt_infer
                     int keepflag = pbox[6];
                     if (keepflag == 1)
                     {
-                        int left = std::min(std::max(1, (int)(pbox[0] / ratio_w)), model_info->m_preProcCfg.network_input_width_ - 1);
-                        int top = std::min(std::max(1, (int)(pbox[1] / ratio_h)), model_info->m_preProcCfg.network_input_height_ - 1);
-                        int right = std::min(std::max(1, (int)(pbox[2] / ratio_w)), model_info->m_preProcCfg.network_input_width_ - 1);
-                        int bottom = std::min(std::max(1, (int)(pbox[3] / ratio_h)), model_info->m_preProcCfg.network_input_height_ - 1);
+                        int left = std::min(std::max(1, (int)(pbox[0] / ratio_w)), images[ib].height - 1);
+                        int top = std::min(std::max(1, (int)(pbox[1] / ratio_h)), images[ib].height - 1);
+                        int right = std::min(std::max(1, (int)(pbox[2] / ratio_w)), images[ib].height - 1);
+                        int bottom = std::min(std::max(1, (int)(pbox[3] / ratio_h)), images[ib].height - 1);
                         // left,top,right,bottom,confidence,class_label
                         output.emplace_back(left, top, right, bottom, pbox[4], label);
                     }
