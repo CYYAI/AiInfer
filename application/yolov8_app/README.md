@@ -13,7 +13,7 @@ if dynamic:
 
 # 补充，注意导出yolov-pose任务的时候有些小问题，作者对pose分支的score进行sigmoid直接使用的是tensor.simoid_()
   # 这种replace方法，onnx导出时并不把这种当做sigmoid算子导出，所以pose score分支是有问题的，解决：
-  # ultralytics/nn/modules.py Pose类的kpts_decode方法，
+  # ultralytics/nn/modules/head.py Pose类的kpts_decode方法，
   y[:, 2::3].sigmoid_() # 修改成下面这种形式即可
   y[:, 2::3] = y[:, 2::3].sigmoid()
 ```
