@@ -7,15 +7,18 @@ if dynamic:
     dynamic = {'images': {0: 'batch'}}  # shape(1,3,640,640)
     if isinstance(self.model, SegmentationModel):
         dynamic['output0'] = {0: 'batch'}
-        dynamic['output1'] = {0: 'batch', 2: 'mask_height', 3: 'mask_width'}
+        dynamic['output1'] = {0: 'batch'}
     elif isinstance(self.model, DetectionModel):
         dynamic['output0'] = {0: 'batch'}
 
-# 补充，注意导出yolov-pose任务的时候有些小问题，作者对pose分支的score进行sigmoid直接使用的是tensor.simoid_()
-  # 这种replace方法，onnx导出时并不把这种当做sigmoid算子导出，所以pose score分支是有问题的，解决：
-  # ultralytics/nn/modules/head.py Pose类的kpts_decode方法，
-  y[:, 2::3].sigmoid_() # 修改成下面这种形式即可
-  y[:, 2::3] = y[:, 2::3].sigmoid()
+# 补充，注意导出yolov-pose任务的时候有个小bug(如果改过来就算了)，kpts_decode方法中:
+if self.export:  # required for TFLite export to avoid 'PLACEHOLDER_FOR_GREATER_OP_CODES' bug
+    y = kpts.view(bs, *self.kpt_shape, -1)
+    a = (y[:, :, :2] * 2.0 + (self.anchors - 0.5)) * self.strides
+    if ndim == 3:
+        # a = torch.cat((a, y[:, :, 1:2].sigmoid()), 2) # 作者这里写错了，不应该是width的sigmoid
+        a = torch.cat((a, y[:, :, 2:3].sigmoid()), 2) # 应该是score分支的sigmoid
+    return a.view(bs, self.nk, -1)
 ```
 - 然后使用下面的命令对yolov8的各任务模型进行导出即可，注意，默认的imgsz是640x640,这个根据你实际情况更改
 ```bash

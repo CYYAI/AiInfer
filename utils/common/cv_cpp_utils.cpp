@@ -217,10 +217,10 @@ namespace ai
                     // draw line
                     for (auto &pair : obj.pose->skeleton)
                     {
-                        if (obj.pose->pose_data[pair[0]][0] > 0. && obj.pose->pose_data[pair[0]][1] > 0. && obj.pose->pose_data[pair[0]][2] >= pose_thr &&
-                            obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][2] >= pose_thr)
-                            cv::line(image, cv::Point(obj.pose->pose_data[pair[0]][0], obj.pose->pose_data[pair[0]][1]),
-                                     cv::Point(obj.pose->pose_data[pair[1]][0], obj.pose->pose_data[pair[1]][1]),
+                        if (obj.pose->pose_data[pair[0] - 1][0] > 0. && obj.pose->pose_data[pair[0] - 1][1] > 0. && obj.pose->pose_data[pair[0] - 1][2] >= pose_thr &&
+                            obj.pose->pose_data[pair[1] - 1][0] > 0. && obj.pose->pose_data[pair[1] - 1][0] > 0. && obj.pose->pose_data[pair[1] - 1][2] >= pose_thr)
+                            cv::line(image, cv::Point(obj.pose->pose_data[pair[0] - 1][0], obj.pose->pose_data[pair[0] - 1][1]),
+                                     cv::Point(obj.pose->pose_data[pair[1] - 1][0], obj.pose->pose_data[pair[1] - 1][1]),
                                      cv::Scalar(r, g, b), 2);
                     }
                 }
