@@ -102,6 +102,7 @@ trtexec --onnx=xxx_dynamic.onnx \
 - 配置CMakeLists中的计算能力为你的显卡对应值
     - 例如`-gencode=arch=compute_75,code=sm_75`，例如RTX3090是86，则是：`-gencode=arch=compute_86,code=sm_86`
     - 计算能力根据型号参考这里查看：https://developer.nvidia.com/zh-cn/cuda-gpus#compute
+    - 也可直接运行脚本[python3 assets/get_device_sm.py](assets/get_device_sm.py)获取sm值
 - 在CMakeLists.txt中配置你本机安装的tensorrt路径，和add_executable中你要使用的main.cpp文件
 - CMake:
     - `mkdir build && cd build`
