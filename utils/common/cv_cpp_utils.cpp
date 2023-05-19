@@ -183,7 +183,8 @@ namespace ai
             }
         }
 
-        void draw_batch_pose(std::vector<cv::Mat> &images, BatchPoseBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels)
+        void draw_batch_pose(std::vector<cv::Mat> &images, BatchPoseBoxArray &batched_result, const std::string &save_dir,
+                             const std::vector<std::string> &classlabels, const float pose_thr)
         {
             for (int ib = 0; ib < (int)batched_result.size(); ++ib)
             {
@@ -209,15 +210,15 @@ namespace ai
                         float pose_x = obj.pose->pose_data[i][0];
                         float pose_y = obj.pose->pose_data[i][1];
                         float pose_score = obj.pose->pose_data[i][2];
-                        if (pose_score >= 0.5)
+                        if (pose_score >= pose_thr)
                             cv::circle(image, cv::Point(pose_x, pose_y), 4, cv::Scalar(b, g, r), -1, 16);
                     }
 
                     // draw line
                     for (auto &pair : obj.pose->skeleton)
                     {
-                        if (obj.pose->pose_data[pair[0]][0] > 0. && obj.pose->pose_data[pair[0]][1] > 0. && obj.pose->pose_data[pair[0]][2] >= 0.5 &&
-                            obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][2] >= 0.5)
+                        if (obj.pose->pose_data[pair[0]][0] > 0. && obj.pose->pose_data[pair[0]][1] > 0. && obj.pose->pose_data[pair[0]][2] >= pose_thr &&
+                            obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][0] > 0. && obj.pose->pose_data[pair[1]][2] >= pose_thr)
                             cv::line(image, cv::Point(obj.pose->pose_data[pair[0]][0], obj.pose->pose_data[pair[0]][1]),
                                      cv::Point(obj.pose->pose_data[pair[1]][0], obj.pose->pose_data[pair[1]][1]),
                                      cv::Scalar(r, g, b), 2);

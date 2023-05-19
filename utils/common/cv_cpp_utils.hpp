@@ -156,7 +156,8 @@ namespace ai
                                 const std::vector<std::string> &classlabels, int img_mask_wh = 160, int network_input_wh = 640);
 
         // draw pose img
-        void draw_batch_pose(std::vector<cv::Mat> &images, BatchPoseBoxArray &batched_result, const std::string &save_dir, const std::vector<std::string> &classlabels);
+        void draw_batch_pose(std::vector<cv::Mat> &images, BatchPoseBoxArray &batched_result, const std::string &save_dir,
+                             const std::vector<std::string> &classlabels, const float pose_thr = 0.25f);
     }
 }
 
