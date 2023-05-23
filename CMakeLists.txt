@@ -6,9 +6,12 @@ add_definitions(-std=c++11 -w)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/workspaces)
 set(CMAKE_INSTALL_PREFIX ${EXECUTABLE_OUTPUT_PATH}/install/) # make install时的存储路径
 
+# set(CMAKE_BUILD_TYPE "Release") # 运行项目时开启
+set(CMAKE_BUILD_TYPE "Debug") # debug时开启
+
 # 2. 设置显卡算力，如果你是不同显卡，请设置为显卡对应的号码参考下面的链接，我这里是RTX 3090,对应的是sm_86：
 # https://developer.nvidia.com/zh-cn/cuda-gpus#compute
-set(CUDA_NVCC_FLAGS "-gencode=arch=compute_86,code=sm_86;-G;-g;-O0;-w")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_86,code=compute_86")
 
 # 3. 寻找cuda和opencv库
 find_package(CUDA REQUIRED) # 这个默认你本机已经安装
