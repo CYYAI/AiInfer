@@ -1,7 +1,9 @@
 ## 项目介绍
-这是一个c++版的AI推理库，目前只支持tensorrt模型的推理。任务的前后处理大多是由cuda编写，项目中会有cuda版本标识。
+这是一个c++版的AI推理库，目前只支持tensorrt模型的推理。为了对相关任务进行加速，任务的前后处理大多是由cuda编写，项目中会有cuda版本标识。
 
 ## 新增项目消息:
+- 🔥增加了BEV分支的tensorrt推理
+    - [FastBEV检测模型cuda版本](xxxx)
 - 🔥增加了RT-DETR的目标检测tensorrt推理
     - [导出RT-DETR-Engine模型教程](https://zhuanlan.zhihu.com/p/623794029)
     - [RT-DETR检测cuda版本](application/rtdetr_det_app/rtdetr_cuda)
