@@ -1,5 +1,5 @@
 ## 项目介绍
-这是一个c++版的AI推理库，目前只支持tensorrt模型的推理，后续计划支持Openvino、NCNN、MNN等框架的c++推理。前后处理提供两个版本，c++版和cuda版，建议使用cuda版。
+这是一个c++版的AI推理库，目前只支持tensorrt模型的推理。任务的前后处理大多是由cuda编写，项目中会有cuda版本标识。
 
 ## 新增项目消息:
 - 🔥增加了RT-DETR的目标检测tensorrt推理
@@ -18,12 +18,6 @@
 - 🔥增加yolo系列通用的检测代码，包含yolov5、yolox、yolov6、yolov7
     - [导出各yolo系列Engine模型的教程](application/yolo_series_app/README.md)
     - [上述yolo系列通用det-cuda代码](application/yolo_series_app)
-    
-## 其他backend推理代码
-- [ Openvino ] coming soon
-- [ NCNN ] coming soon
-- [ MNN ] coming soon
-- 本来打算直接写成一个项目，但这样项目就会较大，较冗余，经群友建议，后面会在这个项目中建立其他分支来实现。
 
 ## 项目目录介绍
 ```bash
@@ -140,12 +134,7 @@ make install
 ```
 </details>
 
-## B站同步视频讲解
-- coming soon
-## 附录
-#### 1. qq联系我们，提提建议
-![QQGroup](assets/infer_qq.png)
-#### 2. 感谢相关项目
+## 感谢相关项目
 - https://github.com/meituan/YOLOv6
 - https://github.com/openppl-public/ppq
 - https://github.com/shouxieai/tensorRT_Pro
