@@ -13,10 +13,10 @@ set(CMAKE_BUILD_TYPE "Debug") # debug时开启
 # https://developer.nvidia.com/zh-cn/cuda-gpus#compute
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_86,code=compute_86")
 
-# 3. 寻找cuda和opencv库
+# 3. 寻找cuda、opencv、protobuf库
 find_package(CUDA REQUIRED) # 这个默认你本机已经安装
 find_package(OpenCV REQUIRED) # 如果你没安装，sudo apt-get install libopencv-dev
-find_package(Eigen3 REQUIRED) # 在使用追踪项目的时候要用到，其他项目直接注释掉即可
+find_package(Protobuf REQUIRED) # 如果你没安装，sudo apt install libprotobuf-dev
 
 # 4. 设置tensorrt的主目录,支持tensorrt7.xx和tensorrt8.xx
 # set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-7.2.3.4") # 设置tensorrt7.xx根目录，改为你自己的即可
@@ -24,9 +24,12 @@ set(TensorRT_ROOT "/home/yyds/thrid_libs/TensorRT-8.6.0.12") # 设置tensorrt8.x
 
 # 5. include所有要用到的hpp文件路径
 include_directories(
+    ${Protobuf_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIRS} # 追踪要用到
+    ${PROJECT_SOURCE_DIR}/libraries/3DSparseConvolution/libspconv-1.1.0/include # 用来解析稀疏卷积算子，后续官方可能会更新
+    ${PROJECT_SOURCE_DIR}/libraries/cuOSD # 用来可视化结果
+
 
     # tensorrt
     ${TensorRT_ROOT}/include
@@ -44,7 +47,7 @@ link_directories(
     # ${CUDA_cublas_LIBRARY}
     # ${CUDA_cudart_static_LIBRARY}
     ${CUDA_TOOLKIT_ROOT_DIR}/lib64
-
+    ${PROJECT_SOURCE_DIR}/libraries/3DSparseConvolution/libspconv-1.1.0/lib/x86_64 # 我这里是x86服务器，所以直接用这个
     # tensorrt
     ${TensorRT_ROOT}/lib
 )
@@ -52,30 +55,28 @@ link_directories(
 
 # 7. 将utils里写好的cu文件和cpp文件编译成so库，方便后面调用
 file(GLOB_RECURSE cpp_cuda_srcs
-    ${PROJECT_SOURCE_DIR}/utils/*.cpp
     ${PROJECT_SOURCE_DIR}/application/*.cpp
+    ${PROJECT_SOURCE_DIR}/utils/*.cpp
     ${PROJECT_SOURCE_DIR}/utils/*.cu
+    ${PROJECT_SOURCE_DIR}/libraries/cuOSD/*.cpp
+    ${PROJECT_SOURCE_DIR}/libraries/cuOSD/*.cu
     ${TensorRT_ROOT}/samples/common/logger.cpp # 引用对应版本的logger.cpp，用来适应多版本
     ${TensorRT_ROOT}/samples/common/sampleOptions.cpp 
     ${TensorRT_ROOT}/samples/common/sampleUtils.cpp
 )
 cuda_add_library(utils_cu_cpp SHARED ${cpp_cuda_srcs})
 
-# add_executable(infer mains/main_yolo_series_det.cpp)
-# add_executable(infer mains/main_yolov8_det.cpp)
-# add_executable(infer mains/main_yolov8_seg.cpp)
-add_executable(infer mains/main_yolov8_pose.cpp)
-# add_executable(infer mains/main_track_yolov8_det.cpp)
-# add_executable(infer mains/main_rtdetr.cpp)
+
+add_executable(infer mains/main_bevfusion_det.cpp)
 # 8. 链接要所有要用到的so库
 target_link_libraries(infer
     utils_cu_cpp # 调用上面编译好的so库
-    cuda
     cudart
-    cudnn
-    pthread
+    cublasLt
+    nvinfer
+    spconv
+    ${Protobuf_LIBRARIES}
     ${OpenCV_LIBS}
-    nvinfer 
     nvinfer_plugin
     # nvonnxparser    
 )
@@ -90,11 +91,3 @@ install(DIRECTORY
         ${PROJECT_SOURCE_DIR}/application/
         DESTINATION include/
         FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h" PATTERN "*.cuh")
-
-# 通过make auto -j 来编译和运行程序
-# add_custom_target(
-#     auto
-#     DEPENDS infer
-#     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/workspaces
-#     COMMAND ./infer
-# )
