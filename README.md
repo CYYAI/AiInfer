@@ -1,5 +1,5 @@
 ## 最新消息
-该项目已废弃，最新项目地址：[nndeploy代替](https://github.com/DeployAI/nndeploy)
+该项目已废弃，推荐本人参与的推理框架项目：[nndeploy](https://github.com/DeployAI/nndeploy)，欢迎各位成为开发者
 
 ## 项目介绍
 这是一个c++版的AI推理库，目前只支持tensorrt模型的推理。为了对相关任务进行加速，任务的前后处理大多是由cuda编写，项目中会有cuda版本标识。
